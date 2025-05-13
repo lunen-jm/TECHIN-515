@@ -1,7 +1,7 @@
 import { db } from '../config';
 import { 
-  collection, addDoc, doc, setDoc, getDoc, 
-  getDocs, query, where, orderBy, limit, Timestamp 
+  collection, addDoc,
+  getDocs, query, where, orderBy, limit
 } from 'firebase/firestore';
 
 // Types for each reading

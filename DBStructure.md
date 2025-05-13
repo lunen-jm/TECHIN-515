@@ -31,7 +31,7 @@ DATABASE
 │   ├── device_id (PK)
 │   ├── name
 │   ├── registered_farm
-│   ├── type
+│   ├── bin_type
 │   ├── created_at
 │   ├── is_active
 │   ├── low_battery
@@ -95,7 +95,7 @@ DEVICE {
     string device_id PK
     string name
     string registered_farm
-    string type
+    string bin_type
     timestamp created_at
     boolean is_active
     boolean low_battery
@@ -180,3 +180,58 @@ DEVICE ||--o{ ALERT : "triggers"
 FARM_GROUP ||--o{ DEVICE_GROUP_MEMBERSHIP : "contains"
 DEVICE ||--o{ DEVICE_GROUP_MEMBERSHIP : "belongs_to"
 ```
+
+### DB Code - Firebase
+
+firebase-project/
+├── users/
+│   └── {user_id}/
+│       ├── username: string
+│       ├── email: string
+│       ├── createdAt: timestamp
+│       ├── localAdmin: boolean
+│       └── globalAdmin: boolean
+│
+├── devices/
+│   └── {device_id}/
+│       ├── name: string
+│       ├── registeredFarm: string
+│       ├── type: string
+│       ├── createdAt: timestamp
+│       ├── isActive: boolean
+│       ├── lowBattery: boolean
+│       └── userId: string (reference to users/{user_id})
+│
+├── farms/
+│   └── {farm_id}/
+│       ├── name: string
+│       ├── description: string
+│       └── userId: string (reference to users/{user_id})
+│
+├── farmDevices/
+│   └── {membership_id}/
+│       ├── farmId: string (reference to farms/{farm_id})
+│       └── deviceId: string (reference to devices/{device_id})
+│
+├── readings/
+│   ├── humidity/
+│   │   └── {reading_id}/
+│   │       ├── deviceId: string
+│   │       ├── timestamp: timestamp
+│   │       └── value: number
+│   │
+│   ├── co2/
+│   │   └── {reading_id}/
+│   │       ├── deviceId: string
+│   │       ├── timestamp: timestamp
+│   │       └── value: number
+│   │
+│   // Similar structure for temperature, lidar, and outdoor_temp
+│
+└── alerts/
+    └── {alert_id}/
+        ├── deviceId: string
+        ├── type: string
+        ├── message: string
+        ├── createdAt: timestamp
+        └── isResolved: boolean
