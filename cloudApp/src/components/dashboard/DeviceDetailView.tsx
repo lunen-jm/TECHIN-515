@@ -83,6 +83,7 @@ const DeviceDetailView: React.FC = () => {
   const [farm, setFarm] = useState<Farm | null>(null);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mockReadings, setMockReadings] = useState({
     temperature: generateMockTimeSeriesData(24, 20, 35),
     humidity: generateMockTimeSeriesData(24, 30, 80),
