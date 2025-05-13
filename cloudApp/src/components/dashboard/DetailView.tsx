@@ -7,92 +7,146 @@ import {
   Box, 
   IconButton,
   Grid,
-  LinearProgress
+  CircularProgress,
+  Chip
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { 
+  ArrowBack as ArrowBackIcon,
+  DevicesOther as DeviceIcon,
+  Thermostat as TempIcon,
+  Opacity as HumidityIcon,
+  Co2 as Co2Icon,
+  Height as HeightIcon
+} from '@mui/icons-material';
+import { useSensorReadings } from '../../hooks/useSensorReadings';
 
-interface MetricProps {
-  label: string;
-  value: string | number;
-  progress?: number;
+interface DeviceInfo {
+  name: string;
+  type: string;
 }
 
-const Metric: React.FC<MetricProps> = ({ label, value, progress }) => (
-  <Box sx={{ mb: 3 }}>
-    <Typography variant="subtitle2" color="text.secondary">
-      {label}
-    </Typography>
-    <Typography variant="h6" sx={{ mt: 1 }}>
-      {value}
-    </Typography>
-    {progress !== undefined && (
-      <Box sx={{ mt: 1 }}>
-        <LinearProgress variant="determinate" value={progress} />
-      </Box>
-    )}
-  </Box>
-);
-
-const DetailView = () => {
-  const { id } = useParams();
+const DetailView: React.FC = () => {
+  const { deviceId } = useParams<{ deviceId: string }>();
   const navigate = useNavigate();
+  const { readings, loading, error } = useSensorReadings(deviceId || '');
 
-  const mockData = {
-    users: {
-      title: 'User Analytics',
-      metrics: [
-        { label: 'Active Users', value: '1,234', progress: 85 },
-        { label: 'New Users (Today)', value: '45' },
-        { label: 'Average Session Time', value: '24m' },
-        { label: 'User Satisfaction', value: '4.5/5', progress: 90 }
-      ]
-    },
-    analytics: {
-      title: 'System Analytics',
-      metrics: [
-        { label: 'System Uptime', value: '99.9%', progress: 99.9 },
-        { label: 'Response Time', value: '0.3s' },
-        { label: 'Error Rate', value: '0.1%', progress: 0.1 },
-        { label: 'CPU Usage', value: '45%', progress: 45 }
-      ]
-    }
+  const deviceInfo: Record<string, DeviceInfo> = {
+    'DEV001': { name: 'Greenhouse #1', type: 'soy' },
+    'DEV002': { name: 'Greenhouse #2', type: 'wheat' }
   };
 
-  const data = mockData[id as keyof typeof mockData];
+  const currentDevice = deviceId ? deviceInfo[deviceId] : undefined;
 
-  if (!data) {
-    return <Typography>Section not found</Typography>;
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <IconButton onClick={() => navigate('/')} sx={{ mr: 2 }}>
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography color="error" variant="h6">{error}</Typography>
+        </Box>
+      </Container>
+    );
   }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ mr: 2 }}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h4">{data.title}</Typography>
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <IconButton onClick={() => navigate('/')} sx={{ mr: 2 }}>
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h4" component="div" sx={{ flex: 1 }}>
+            {currentDevice?.name || `Device ${deviceId}`}
+          </Typography>
+          <Chip 
+            icon={<DeviceIcon />} 
+            label={currentDevice?.type || 'Unknown Type'} 
+            color="primary" 
+            variant="outlined" 
+          />
+        </Box>
       </Box>
-      
-      <Grid container spacing={3}>
-        {data.metrics.map((metric, index) => (
-          <Grid key={index} component="div" sx={{
-            flexBasis: {
-              xs: '100%',
-              sm: '50%',
-              md: '25%'
-            },
-            maxWidth: {
-              xs: '100%',
-              sm: '50%',
-              md: '25%'
-            }
-          }}>
-            <Paper sx={{ p: 3 }}>
-              <Metric {...metric} />
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : readings ? (
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <Paper 
+              sx={{ 
+                p: 3, 
+                backgroundColor: 'rgba(33, 150, 243, 0.05)',
+                transition: 'transform 0.3s ease-in-out',
+                '&:hover': { transform: 'translateY(-4px)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <TempIcon color="primary" sx={{ mr: 1 }} />
+                <Typography variant="h6">Temperature</Typography>
+              </Box>
+              <Typography variant="h3">{readings.temperature.toFixed(1)}°C</Typography>
             </Paper>
           </Grid>
-        ))}
-      </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper 
+              sx={{ 
+                p: 3, 
+                backgroundColor: 'rgba(76, 175, 80, 0.05)',
+                transition: 'transform 0.3s ease-in-out',
+                '&:hover': { transform: 'translateY(-4px)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <HumidityIcon color="success" sx={{ mr: 1 }} />
+                <Typography variant="h6">Humidity</Typography>
+              </Box>
+              <Typography variant="h3">{readings.humidity.toFixed(1)}%</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper 
+              sx={{ 
+                p: 3, 
+                backgroundColor: 'rgba(156, 39, 176, 0.05)',
+                transition: 'transform 0.3s ease-in-out',
+                '&:hover': { transform: 'translateY(-4px)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <Co2Icon color="secondary" sx={{ mr: 1 }} />
+                <Typography variant="h6">CO2 Concentration</Typography>
+              </Box>
+              <Typography variant="h3">{readings.co2_concentration.toFixed(0)} ppm</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper 
+              sx={{ 
+                p: 3, 
+                backgroundColor: 'rgba(255, 152, 0, 0.05)',
+                transition: 'transform 0.3s ease-in-out',
+                '&:hover': { transform: 'translateY(-4px)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <HeightIcon sx={{ mr: 1, color: 'warning.main' }} />
+                <Typography variant="h6">Distance</Typography>
+              </Box>
+              <Typography variant="h3">{readings.lidar_distance.toFixed(1)} cm</Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      ) : (
+        <Box sx={{ mt: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="text.secondary">
+            No sensor readings available for this device
+          </Typography>
+        </Box>
+      )}
     </Container>
   );
 };

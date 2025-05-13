@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
-import Overview from './components/dashboard/Overview';
 import DetailView from './components/dashboard/DetailView';
+import Devices from './pages/Devices';
 import './App.css';
 
 const theme = createTheme({
@@ -23,8 +23,8 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/" element={<Overview />} />
-            <Route path="/:id" element={<DetailView />} />
+            <Route path="/" element={<Devices />} />
+            <Route path="/device/:deviceId" element={<DetailView />} />
           </Routes>
         </div>
       </Router>

@@ -34,9 +34,10 @@ DATABASE
 │   ├── created_at
 │   ├── is_active
 │   ├── low_battery
-│   └── user_id (FK → USERS)
+│   ├── bin_type
+│   └── farm_id (FK → USERS)
 │
-├── SENSOR_READINGS
+├── SENSOR_READINGS()
 │   ├── reading_id (PK)
 │   ├── device_id (FK → DEVICES)
 │   ├── timestamp

@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow reading all sensor readings
+    match /sensorReadings/{reading} {
+      allow read: if true;
+    }
+    
+    // Allow reading all devices
+    match /devices/{device} {
+      allow read: if true;
+    }
+    
+    // Default rule - deny all writes
+    match /{document=**} {
+      allow write: if false;
+    }
+  }
+}
