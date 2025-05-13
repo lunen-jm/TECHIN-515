@@ -8,6 +8,7 @@ Here are the values that are transmitted from sensors on the sensing device:
 * CO2 concentration
 * temperature
 * LiDar distance
+* outdoor temperature
 
 Additionally, we can add a tag into the data that shows which device it is being transmitted from, which can auto-populate a large chunk of the data
 
@@ -36,14 +37,35 @@ DATABASE
 │   ├── low_battery
 │   └── user_id (FK → USERS)
 │
-├── SENSOR_READINGS
+├── HUMIDITY_READINGS
 │   ├── reading_id (PK)
 │   ├── device_id (FK → DEVICES)
 │   ├── timestamp
-│   ├── humidity
-│   ├── co2_concentration
-│   ├── temperature
-│   └── lidar_distance
+│   └── humidity_value
+│
+├── CO2_READINGS
+│   ├── reading_id (PK)
+│   ├── device_id (FK → DEVICES)
+│   ├── timestamp
+│   └── co2_value
+│
+├── TEMPERATURE_READINGS
+│   ├── reading_id (PK)
+│   ├── device_id (FK → DEVICES)
+│   ├── timestamp
+│   └── temperature_value
+│
+├── LIDAR_READINGS
+│   ├── reading_id (PK)
+│   ├── device_id (FK → DEVICES)
+│   ├── timestamp
+│   └── distance_value
+│
+├── OUTDOOR_TEMP_READINGS
+│   ├── reading_id (PK)
+│   ├── device_id (FK → DEVICES)
+│   ├── timestamp
+│   └── outdoor_temp_value
 │
 ├── FARM_GROUPS
 │   ├── farm_id (PK)
@@ -80,14 +102,39 @@ DEVICE {
     string user_id FK
 }
 
-SENSOR_READING {
+HUMIDITY_READING {
     int reading_id PK
     string device_id FK
     timestamp timestamp
-    float humidity
-    float co2_concentration
-    float temperature
-    float lidar_distance
+    float humidity_value
+}
+
+CO2_READING {
+    int reading_id PK
+    string device_id FK
+    timestamp timestamp
+    float co2_value
+}
+
+TEMPERATURE_READING {
+    int reading_id PK
+    string device_id FK
+    timestamp timestamp
+    float temperature_value
+}
+
+LIDAR_READING {
+    int reading_id PK
+    string device_id FK
+    timestamp timestamp
+    float distance_value
+}
+
+OUTDOOR_TEMP_READING {
+    int reading_id PK
+    string device_id FK
+    timestamp timestamp
+    float outdoor_temp_value
 }
 
 USER {
@@ -124,7 +171,11 @@ ALERT {
 
 USER ||--o{ DEVICE : "owns"
 USER ||--o{ FARM_GROUP : "creates"
-DEVICE ||--o{ SENSOR_READING : "generates"
+DEVICE ||--o{ HUMIDITY_READING : "generates"
+DEVICE ||--o{ CO2_READING : "generates"
+DEVICE ||--o{ TEMPERATURE_READING : "generates"
+DEVICE ||--o{ LIDAR_READING : "generates"
+DEVICE ||--o{ OUTDOOR_TEMP_READING : "generates"
 DEVICE ||--o{ ALERT : "triggers"
 FARM_GROUP ||--o{ DEVICE_GROUP_MEMBERSHIP : "contains"
 DEVICE ||--o{ DEVICE_GROUP_MEMBERSHIP : "belongs_to"
