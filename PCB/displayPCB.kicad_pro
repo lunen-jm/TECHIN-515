@@ -469,7 +469,7 @@
       "plot": "v1/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "displayPCB.step",
       "svg": "",
       "vrml": ""
     },
