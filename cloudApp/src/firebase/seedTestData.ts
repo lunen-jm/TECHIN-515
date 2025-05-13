@@ -2,17 +2,10 @@ import { db } from './config';
 import { 
   collection, doc, setDoc, addDoc, Timestamp, query, where, getDocs, deleteDoc
 } from 'firebase/firestore';
-import { addDeviceToFarm } from './services/farmService';
 
 // Function to generate random number within a range
 const getRandomNumber = (min: number, max: number) => {
   return Math.random() * (max - min) + min;
-};
-
-// Function to generate a random crop type
-const getRandomCrop = () => {
-  const crops = ['Wheat', 'Corn', 'Soybean', 'Rice', 'Barley', 'Oats'];
-  return crops[Math.floor(Math.random() * crops.length)];
 };
 
 // Generate test data

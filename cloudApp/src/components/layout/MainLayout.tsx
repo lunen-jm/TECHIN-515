@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import { 
   Menu as MenuIcon, 
-  ChevronLeft as ChevronLeftIcon,
   Dashboard as DashboardIcon,
   Agriculture as AgricultureIcon,
   DevicesOther as DevicesIcon,

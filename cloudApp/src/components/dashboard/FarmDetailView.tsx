@@ -7,7 +7,6 @@ import {
   CircularProgress,
   Paper,
   Chip,
-  Divider,
   IconButton,
   Breadcrumbs,
   Link

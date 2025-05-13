@@ -7,9 +7,7 @@ import {
   Box, 
   Chip, 
   Grid,
-  LinearProgress,
-  Tooltip,
-  Icon
+  Tooltip
 } from '@mui/material';
 import { 
   Thermostat as ThermostatIcon,
