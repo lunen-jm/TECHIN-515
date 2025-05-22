@@ -82,7 +82,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     ...(isDevMode ? [{ text: 'Admin', icon: <AdminIcon />, path: '/admin' }] : []),
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
-
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar 
@@ -101,6 +100,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               duration: theme.transitions.duration.enteringScreen,
             }),
           }),
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          backgroundColor: 'white',
+          color: 'text.primary'
         }}
       >
         <Toolbar>
@@ -113,43 +115,52 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
             Farm Sensor Dashboard
           </Typography>
-          {process.env.NODE_ENV === 'development' && (
-            <Tooltip title="Admin Panel">
-              <IconButton color="inherit" onClick={() => navigate('/admin')}>
-                <AdminIcon />
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+              Last updated: {new Date().toLocaleTimeString()}
+            </Typography>
+            {process.env.NODE_ENV === 'development' && (
+              <Tooltip title="Admin Panel">
+                <IconButton color="inherit" onClick={() => navigate('/admin')}>
+                  <AdminIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Tooltip title="Alerts Center">
+              <IconButton color="inherit" sx={{ ml: 1 }}>
+                <NotificationsIcon />
               </IconButton>
             </Tooltip>
-          )}
-          <Tooltip title="Notifications">
-            <IconButton color="inherit">
-              <NotificationsIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Help">
-            <IconButton color="inherit">
-              <HelpIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Profile">
-            <IconButton color="inherit" onClick={handleProfileMenu}>
-              {currentUser?.photoURL ? (
-                <Avatar src={currentUser.photoURL} alt={currentUser.displayName || 'User'} sx={{ width: 32, height: 32 }} />
-              ) : (
-                <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.secondary.main }}>
-                  {currentUser?.displayName ? currentUser.displayName.charAt(0).toUpperCase() : <PersonIcon />}
-                </Avatar>
-              )}
-            </IconButton>
-          </Tooltip>
+            <Tooltip title="Help">
+              <IconButton color="inherit" sx={{ ml: 1 }}>
+                <HelpIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Profile">
+              <IconButton color="inherit" onClick={handleProfileMenu} sx={{ ml: 1 }}>
+                {currentUser?.photoURL ? (
+                  <Avatar src={currentUser.photoURL} alt={currentUser.displayName || 'User'} sx={{ width: 32, height: 32 }} />
+                ) : (
+                  <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main, color: 'white' }}>
+                    {currentUser?.displayName ? currentUser.displayName.charAt(0).toUpperCase() : <PersonIcon />}
+                  </Avatar>
+                )}
+              </IconButton>
+            </Tooltip>
+          </Box>
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleCloseMenu}
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            PaperProps={{
+              elevation: 2,
+              sx: { borderRadius: 2, mt: 1 }
+            }}
           >
             <MenuItem onClick={() => { handleCloseMenu(); navigate('/profile'); }}>
               <ListItemIcon>
@@ -172,8 +183,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </MenuItem>
           </Menu>
         </Toolbar>
-      </AppBar>
-      <Drawer
+      </AppBar>      <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? open : true}
         onClose={isMobile ? handleDrawerToggle : undefined}
@@ -183,12 +193,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           [`& .MuiDrawer-paper`]: { 
             width: drawerWidth, 
             boxSizing: 'border-box',
-            ...(isMobile && !open && { display: 'none' })
+            ...(isMobile && !open && { display: 'none' }),
+            borderRight: '1px solid rgba(0, 0, 0, 0.05)',
+            boxShadow: 'none',
+            backgroundColor: '#FFFFFF',
           },
         }}
       >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto', pt: 2 }}>
+        <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              fontWeight: 700, 
+              color: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}
+          >
+            <AgricultureIcon /> Farm Monitor
+          </Typography>
+        </Toolbar>
+        <Divider sx={{ mx: 2 }} />
+        <Box sx={{ overflow: 'auto', py: 2, px: 1 }}>
           <List>
             {menuItems.map((item) => (
               <ListItem 
@@ -196,14 +224,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 disablePadding
                 sx={{ 
                   display: 'block',
-                  bgcolor: location.pathname === item.path ? 'rgba(0, 0, 0, 0.08)' : 'transparent'
+                  mb: 0.5,
                 }}
               >
                 <ListItemButton
                   sx={{
                     minHeight: 48,
-                    justifyContent: open ? 'initial' : 'center',
-                    px: 2.5,
+                    borderRadius: 2,
+                    px: 2,
+                    ...(location.pathname === item.path && {
+                      backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    }),
                   }}
                   onClick={() => navigate(item.path)}
                 >
@@ -212,7 +243,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       minWidth: 0,
                       mr: 3,
                       justifyContent: 'center',
-                      color: location.pathname === item.path ? theme.palette.primary.main : 'inherit'
+                      color: location.pathname === item.path ? 'primary.main' : 'text.secondary'
                     }}
                   >
                     {item.icon}
@@ -221,21 +252,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     primary={item.text} 
                     sx={{ 
                       opacity: 1,
-                      color: location.pathname === item.path ? theme.palette.primary.main : 'inherit'
+                      '& .MuiTypography-root': {
+                        fontWeight: location.pathname === item.path ? 600 : 400,
+                        color: location.pathname === item.path ? 'primary.main' : 'text.primary',
+                      }
                     }} 
                   />
                 </ListItemButton>
               </ListItem>
             ))}
           </List>
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2, mx: 2 }} />
           {!isMobile && (
             <Box sx={{ px: 3, py: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 Farm Sensor Dashboard v1.0
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                &copy; {new Date().getFullYear()} Your Company
+                &copy; {new Date().getFullYear()} Farm Monitor
               </Typography>
             </Box>
           )}

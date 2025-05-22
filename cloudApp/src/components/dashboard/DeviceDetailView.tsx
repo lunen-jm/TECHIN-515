@@ -273,8 +273,7 @@ const DeviceDetailView: React.FC = () => {
 
       {/* Overview Tab */}
       <TabPanel value={tabValue} index={0}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={3}>          <Grid item xs={12} md={6}>
             <SensorReadingCard 
               title="Temperature"
               value={`${mockReadings.temperature[mockReadings.temperature.length - 1].value}°C`}
@@ -285,6 +284,8 @@ const DeviceDetailView: React.FC = () => {
               timestamp={mockReadings.temperature[mockReadings.temperature.length - 1].timestamp}
               description="Internal bin temperature"
               onClick={() => setTabValue(1)}
+              sensorType="temperature"
+              rawValue={mockReadings.temperature[mockReadings.temperature.length - 1].value}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -298,6 +299,8 @@ const DeviceDetailView: React.FC = () => {
               timestamp={mockReadings.humidity[mockReadings.humidity.length - 1].timestamp}
               description="Internal relative humidity"
               onClick={() => setTabValue(2)}
+              sensorType="humidity"
+              rawValue={mockReadings.humidity[mockReadings.humidity.length - 1].value}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -311,6 +314,8 @@ const DeviceDetailView: React.FC = () => {
               timestamp={mockReadings.co2[mockReadings.co2.length - 1].timestamp}
               description="Carbon dioxide concentration"
               onClick={() => setTabValue(3)}
+              sensorType="co2"
+              rawValue={mockReadings.co2[mockReadings.co2.length - 1].value}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -324,10 +329,11 @@ const DeviceDetailView: React.FC = () => {
               timestamp={mockReadings.lidar[mockReadings.lidar.length - 1].timestamp}
               description="Distance to grain surface (LiDAR)"
               onClick={() => setTabValue(4)}
+              sensorType="lidar"
+              rawValue={mockReadings.lidar[mockReadings.lidar.length - 1].value}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
-            <SensorReadingCard 
+          <Grid item xs={12} md={6}>            <SensorReadingCard 
               title="Outdoor Temperature"
               value={`${mockReadings.outdoorTemp[mockReadings.outdoorTemp.length - 1].value}°C`}
               data={mockReadings.outdoorTemp}
@@ -337,6 +343,8 @@ const DeviceDetailView: React.FC = () => {
               timestamp={mockReadings.outdoorTemp[mockReadings.outdoorTemp.length - 1].timestamp}
               description="External ambient temperature"
               onClick={() => setTabValue(1)}
+              sensorType="outdoorTemp" 
+              rawValue={mockReadings.outdoorTemp[mockReadings.outdoorTemp.length - 1].value}
             />
           </Grid>
         </Grid>

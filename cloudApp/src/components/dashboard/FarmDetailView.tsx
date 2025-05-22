@@ -138,11 +138,10 @@ const FarmDetailView: React.FC = () => {
       </Box>
     );
   }
-
   return (
     <Box>
       {/* Breadcrumb Navigation */}
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
         <Link component={RouterLink} underline="hover" color="inherit" to="/">
           Dashboard
         </Link>
@@ -153,36 +152,54 @@ const FarmDetailView: React.FC = () => {
       </Breadcrumbs>
 
       {/* Farm Header */}
-      <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'background.paper', borderRadius: 2 }}>
+      <Paper elevation={0} sx={{ p: 4, mb: 4, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <IconButton 
                 size="small" 
-                sx={{ mr: 1 }}
+                sx={{ mr: 1.5, bgcolor: 'background.default' }}
                 onClick={() => navigate('/farms')}
               >
                 <ArrowBackIcon />
               </IconButton>
-              <Typography variant="h4" component="h1">
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
                 {farm.name}
               </Typography>
               <Chip 
                 label={`${devices.length} ${devices.length === 1 ? 'Device' : 'Devices'}`} 
                 size="small" 
-                sx={{ ml: 2 }}
+                sx={{ ml: 2, bgcolor: 'primary.light', color: 'white', fontWeight: 500 }}
               />
             </Box>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3, ml: 6 }}>
               {farm.description}
             </Typography>
+            <Box sx={{ ml: 6, display: 'flex', gap: 2 }}>
+              <Box sx={{ bgcolor: 'background.default', p: 2, borderRadius: 2, minWidth: 150 }}>
+                <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  Created
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {farm.createdAt?.toDate().toLocaleDateString() || 'Unknown'}
+                </Typography>
+              </Box>
+              <Box sx={{ bgcolor: 'background.default', p: 2, borderRadius: 2, minWidth: 150 }}>
+                <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  Last Updated
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {new Date().toLocaleDateString()}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
           <Box>
             <Button 
               variant="outlined" 
               startIcon={<SettingsIcon />}
               onClick={() => navigate(`/farms/${farmId}/settings`)}
-              sx={{ mr: 1 }}
+              sx={{ mr: 1.5 }}
             >
               Farm Settings
             </Button>
@@ -199,29 +216,31 @@ const FarmDetailView: React.FC = () => {
 
       {/* Devices Grid */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5" component="h2">
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
           Devices
         </Typography>
         <Button 
           startIcon={<RefreshIcon />}
           onClick={() => window.location.reload()}
+          sx={{ borderRadius: '20px', px: 2 }}
         >
           Refresh Data
         </Button>
       </Box>
 
       {devices.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+          <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
             No Devices Found
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
             This farm doesn't have any devices yet. Add your first device to start monitoring.
           </Typography>
           <Button 
             variant="contained" 
             startIcon={<AddCircleIcon />}
             onClick={() => navigate(`/devices/create?farmId=${farmId}`)}
+            sx={{ px: 3, py: 1 }}
           >
             Add Your First Device
           </Button>

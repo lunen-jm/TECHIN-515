@@ -8,6 +8,7 @@ interface DashboardCardProps {
   description: string;
   icon: SvgIconComponent;
   onClick: () => void;
+  color?: string;
 }
 
 const DashboardCard: React.FC<DashboardCardProps> = ({
@@ -16,18 +17,44 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   description,
   icon: Icon,
   onClick,
+  color = 'primary.main',
 }) => {
   return (
-    <Card sx={{ minWidth: 275, maxWidth: 345, m: 2 }}>
+    <Card 
+      elevation={1} 
+      sx={{ 
+        minWidth: 275, 
+        maxWidth: 345, 
+        m: 2, 
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 3,
+        transition: 'all 0.2s',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+        },
+        bgcolor: 'background.paper'
+      }}
+    >
       <CardActionArea onClick={onClick}>
-        <CardContent>
+        <CardContent sx={{ p: 3 }}>
           <Box display="flex" alignItems="center" mb={2}>
-            <Icon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
-            <Typography variant="h5" component="div">
+            <Box 
+              sx={{ 
+                bgcolor: `${color}10`, // 10% opacity of the main color
+                borderRadius: 2,
+                p: 1.5,
+                mr: 2
+              }}
+            >
+              <Icon sx={{ fontSize: 32, color: color }} />
+            </Box>
+            <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
               {title}
             </Typography>
           </Box>
-          <Typography variant="h4" color="primary" gutterBottom>
+          <Typography variant="h4" sx={{ color: color, fontWeight: 700, mb: 1 }}>
             {stats}
           </Typography>
           <Typography variant="body2" color="text.secondary">
