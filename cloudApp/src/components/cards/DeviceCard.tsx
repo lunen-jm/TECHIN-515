@@ -8,8 +8,7 @@ import {
   Chip, 
   Grid,
   Tooltip,
-  LinearProgress,
-  useTheme
+  LinearProgress
 } from '@mui/material';
 import { 
   Thermostat as ThermostatIcon,
@@ -45,8 +44,8 @@ interface DeviceProps {
 }
 
 const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
-  const theme = useTheme();
-
+  // Remove unused theme variable
+  
   const getStatusLabel = (isActive: boolean) => {
     return isActive ? 'Online' : 'Offline';
   };

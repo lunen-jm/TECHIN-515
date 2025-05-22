@@ -180,14 +180,12 @@ const SensorReadingCard: React.FC<SensorReadingCardProps> = ({
         return `Value: ${value}`;
     }
   };
-
   // Get status icon based on value
   const getStatusIcon = (type: string, value: number | undefined) => {
     if (value === undefined) return <InfoIcon fontSize="small" />;
     
     // For lidar, different logic applies
     if (type === 'lidar') {
-      const fillPercent = value < 300 ? Math.round((300 - value) / 3) : 0;
       return <InfoIcon fontSize="small" />;
     }
     
