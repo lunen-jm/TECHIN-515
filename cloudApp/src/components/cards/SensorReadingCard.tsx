@@ -5,7 +5,6 @@ import {
   CardActionArea, 
   Typography, 
   Box,
-  Divider,
   Tooltip,
   LinearProgress,
   useTheme
@@ -164,12 +163,11 @@ const SensorReadingCard: React.FC<SensorReadingCardProps> = ({
         if (value > 1000) return 'Critical: CO₂ levels too high';
         if (value > 800) return 'Warning: CO₂ levels elevated';
         return 'Optimal CO₂ levels';
-        
-      case 'lidar':
-        const fillPercent = value < 300 ? Math.round((300 - value) / 3) : 0; // Assuming 0-300cm range is 0-100%
-        if (fillPercent < 30) return `Low fill level (${fillPercent}%)`;
-        if (fillPercent < 70) return `Medium fill level (${fillPercent}%)`;
-        return `High fill level (${fillPercent}%)`;
+          case 'lidar':
+        // Calculate fill percentage for display purposes
+        return value < 300 ? 
+          `Fill level: ${Math.round((300 - value) / 3)}%` : 
+          'Empty: 0%';
       
       case 'outdoorTemp':
         if (value < 0) return 'Very cold outdoor conditions';

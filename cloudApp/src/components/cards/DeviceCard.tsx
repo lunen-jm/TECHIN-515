@@ -21,8 +21,7 @@ import {
   Cloud as CloudIcon,
   SignalWifi4Bar as SignalGoodIcon,
   SignalWifiOff as SignalBadIcon,
-  Check as CheckIcon,
-  Warning as WarningIcon
+  Check as CheckIcon
 } from '@mui/icons-material';
 
 interface DeviceProps {
@@ -73,7 +72,6 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
         return '#E0E0E0'; // Grey
     }
   };
-
   // Calculate percentage for progress bars
   const getProgressValue = (reading: number | undefined, max: number, min: number = 0) => {
     if (reading === undefined) return 0;
@@ -81,73 +79,7 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
     const clamped = Math.min(Math.max(reading, min), max);
     return ((clamped - min) / (max - min)) * 100;
   };
-
-  // Determine color based on value thresholds
-  const getDataColor = (type: string, value: number | undefined) => {
-    if (value === undefined) return theme.palette.statusColors.neutral;
-    
-    switch(type) {
-      case 'temperature':
-        if (value < 10) return theme.palette.statusColors.critical; // Too cold
-        if (value > 30) return theme.palette.statusColors.critical; // Too hot
-        if (value < 15 || value > 25) return theme.palette.statusColors.warning; // Warning range
-        return theme.palette.statusColors.optimal;
-      
-      case 'humidity':
-        if (value < 30) return theme.palette.statusColors.critical; // Too dry
-        if (value > 80) return theme.palette.statusColors.critical; // Too humid
-        if (value < 40 || value > 70) return theme.palette.statusColors.warning; // Warning range
-        return theme.palette.statusColors.optimal;
-        
-      case 'co2':
-        if (value > 1000) return theme.palette.statusColors.critical; // Dangerous
-        if (value > 800) return theme.palette.statusColors.warning; // Warning
-        return theme.palette.statusColors.optimal;
-        
-      case 'lidar': // Fill level
-        if (value < 50) return theme.palette.statusColors.fillLow;
-        if (value < 150) return theme.palette.statusColors.fillMedium;
-        return theme.palette.statusColors.fillHigh;
-        
-      default:
-        return theme.palette.statusColors.neutral;
-    }
-  };
-
-  // Create tooltip text based on value and type
-  const getTooltipText = (type: string, value: number | undefined) => {
-    if (value === undefined) return 'No data available';
-    
-    switch(type) {
-      case 'temperature':
-        if (value < 10) return 'Critical: Temperature too low';
-        if (value > 30) return 'Critical: Temperature too high';
-        if (value < 15) return 'Warning: Temperature slightly low';
-        if (value > 25) return 'Warning: Temperature slightly high';
-        return 'Optimal temperature range';
-      
-      case 'humidity':
-        if (value < 30) return 'Critical: Humidity too low';
-        if (value > 80) return 'Critical: Humidity too high';
-        if (value < 40) return 'Warning: Humidity slightly low';
-        if (value > 70) return 'Warning: Humidity slightly high';
-        return 'Optimal humidity range';
-        
-      case 'co2':
-        if (value > 1000) return 'Critical: CO₂ levels too high';
-        if (value > 800) return 'Warning: CO₂ levels elevated';
-        return 'Optimal CO₂ levels';
-        
-      case 'lidar': // Fill level
-        const fillPercent = Math.round((300 - value) / 3); // Assuming 0-300cm range is 0-100%
-        if (fillPercent < 30) return `Low fill level (${fillPercent}%)`;
-        if (fillPercent < 70) return `Medium fill level (${fillPercent}%)`;
-        return `High fill level (${fillPercent}%)`;
-        
-      default:
-        return `Value: ${value}`;
-    }
-  };
+  // Calculate progress values for different sensor types
 
   // Calculate progress values for different sensor types
   const humidityProgress = getProgressValue(device.latestReadings?.humidity, 100);

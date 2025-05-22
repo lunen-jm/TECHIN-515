@@ -11,7 +11,6 @@ import {
   Avatar,
   Paper,
   Divider,
-  Stack,
   LinearProgress
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -20,9 +19,7 @@ import {
   Agriculture as AgricultureIcon, 
   Add as AddIcon,
   DevicesOther as DevicesIcon,
-  Dashboard as DashboardIcon,
   Warning as WarningIcon,
-  TrendingUp as TrendingUpIcon,
   LocationOn as LocationIcon,
   Storage as StorageIcon
 } from '@mui/icons-material';
