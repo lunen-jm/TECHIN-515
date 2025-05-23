@@ -23,29 +23,29 @@ import {
   Height as HeightIcon,
   Cloud as CloudIcon,
   Battery20 as BatteryLowIcon,
-  Battery90 as BatteryGoodIcon,
+    Battery90 as BatteryGoodIcon,
   SignalWifi4Bar as SignalGoodIcon,
   SignalWifiOff as SignalBadIcon
 } from '@mui/icons-material';
 import { getDevice } from '../../firebase/services/deviceService';
 import { getFarm } from '../../firebase/services/farmService';
-import SensorReadingCard from '../../components/cards/SensorReadingCard';
+import SiloIndicator from '../common/SiloIndicator';
 
-interface TabPanelProps {
+interface ChartTabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
 
-function TabPanel(props: TabPanelProps) {
+function ChartTabPanel(props: ChartTabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`device-tabpanel-${index}`}
-      aria-labelledby={`device-tab-${index}`}
+      id={`chart-tabpanel-${index}`}
+      aria-labelledby={`chart-tab-${index}`}
       {...other}
     >
       {value === index && (
@@ -78,11 +78,10 @@ interface Farm {
 
 const DeviceDetailView: React.FC = () => {
   const { deviceId } = useParams<{ deviceId: string }>();
-  const navigate = useNavigate();
-  const [device, setDevice] = useState<Device | null>(null);
+  const navigate = useNavigate();  const [device, setDevice] = useState<Device | null>(null);
   const [farm, setFarm] = useState<Farm | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tabValue, setTabValue] = useState(0);
+  const [chartTabValue, setChartTabValue] = useState(0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mockReadings, setMockReadings] = useState({
     temperature: generateMockTimeSeriesData(24, 20, 35),
@@ -144,9 +143,8 @@ const DeviceDetailView: React.FC = () => {
 
     fetchDeviceAndFarm();
   }, [deviceId, navigate]);
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+  const handleChartTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setChartTabValue(newValue);
   };
 
   if (loading) {
@@ -252,211 +250,308 @@ const DeviceDetailView: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Tabs Navigation */}
-      <Box sx={{ width: '100%', bgcolor: 'background.paper', mb: 3 }}>
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange} 
-          aria-label="device data tabs"
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          <Tab label="Overview" />
-          <Tab label="Temperature" />
-          <Tab label="Humidity" />
-          <Tab label="CO₂" />
-          <Tab label="Fill Level" />
-          <Tab label="Alerts" />
-          <Tab label="History" />
-        </Tabs>
-      </Box>
+      {/* Main Content Layout */}
+      <Grid container spacing={4} sx={{ mb: 4 }}>
+        {/* Left Column - Large Grain Bin Card */}
+        <Grid item xs={12} md={6}>
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 4, 
+              height: 'fit-content', 
+              borderRadius: 3,
+              background: '#FFFFFF',
+              border: '1px solid #E5E7EB',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+            }}
+          >
+            {/* Device Title and Status */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+              <Typography variant="h5" fontWeight={600} sx={{ color: '#111827' }}>
+                {device.type || 'Grain Storage'}
+              </Typography>
+              <Chip 
+                size="small"
+                label={device.isActive ? 'Online' : 'Offline'}
+                color={device.isActive ? 'success' : 'error'}
+                variant="outlined"
+                sx={{ 
+                  borderRadius: 2,
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                }}
+              />
+            </Box>
 
-      {/* Overview Tab */}
-      <TabPanel value={tabValue} index={0}>
-        <Grid container spacing={3}>          <Grid item xs={12} md={6}>
-            <SensorReadingCard 
-              title="Temperature"
-              value={`${mockReadings.temperature[mockReadings.temperature.length - 1].value}°C`}
-              data={mockReadings.temperature}
-              icon={<ThermostatIcon />}
-              color="#f44336"
-              unit="°C"
-              timestamp={mockReadings.temperature[mockReadings.temperature.length - 1].timestamp}
-              description="Internal bin temperature"
-              onClick={() => setTabValue(1)}
-              sensorType="temperature"
-              rawValue={mockReadings.temperature[mockReadings.temperature.length - 1].value}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <SensorReadingCard 
-              title="Humidity"
-              value={`${mockReadings.humidity[mockReadings.humidity.length - 1].value}%`}
-              data={mockReadings.humidity}
-              icon={<WaterDropIcon />}
-              color="#2196f3"
-              unit="%"
-              timestamp={mockReadings.humidity[mockReadings.humidity.length - 1].timestamp}
-              description="Internal relative humidity"
-              onClick={() => setTabValue(2)}
-              sensorType="humidity"
-              rawValue={mockReadings.humidity[mockReadings.humidity.length - 1].value}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <SensorReadingCard 
-              title="CO₂ Level"
-              value={`${mockReadings.co2[mockReadings.co2.length - 1].value} ppm`}
-              data={mockReadings.co2}
-              icon={<Co2Icon />}
-              color="#9e9e9e"
-              unit="ppm"
-              timestamp={mockReadings.co2[mockReadings.co2.length - 1].timestamp}
-              description="Carbon dioxide concentration"
-              onClick={() => setTabValue(3)}
-              sensorType="co2"
-              rawValue={mockReadings.co2[mockReadings.co2.length - 1].value}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <SensorReadingCard 
-              title="Fill Level"
-              value={`${mockReadings.lidar[mockReadings.lidar.length - 1].value} cm`}
-              data={mockReadings.lidar}
-              icon={<HeightIcon />}
-              color="#4caf50"
-              unit="cm"
-              timestamp={mockReadings.lidar[mockReadings.lidar.length - 1].timestamp}
-              description="Distance to grain surface (LiDAR)"
-              onClick={() => setTabValue(4)}
-              sensorType="lidar"
-              rawValue={mockReadings.lidar[mockReadings.lidar.length - 1].value}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>            <SensorReadingCard 
-              title="Outdoor Temperature"
-              value={`${mockReadings.outdoorTemp[mockReadings.outdoorTemp.length - 1].value}°C`}
-              data={mockReadings.outdoorTemp}
-              icon={<CloudIcon />}
-              color="#3f51b5"
-              unit="°C"
-              timestamp={mockReadings.outdoorTemp[mockReadings.outdoorTemp.length - 1].timestamp}
-              description="External ambient temperature"
-              onClick={() => setTabValue(1)}
-              sensorType="outdoorTemp" 
-              rawValue={mockReadings.outdoorTemp[mockReadings.outdoorTemp.length - 1].value}
-            />
-          </Grid>
+            {/* Large Silo Indicator */}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <SiloIndicator
+                fillPercentage={Math.round((300 - mockReadings.lidar[mockReadings.lidar.length - 1].value) / 3)}
+                label=""
+                variant="minimal"
+                height={200}
+                width={100}
+              />
+            </Box>
+
+            {/* Key Metrics */}
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+                  <Typography variant="h4" fontWeight={700} color="#3B82F6">
+                    {Math.round((300 - mockReadings.lidar[mockReadings.lidar.length - 1].value) / 3)}%
+                  </Typography>
+                  <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                    Fill Level
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+                  <Typography variant="h4" fontWeight={700} color="#10B981">
+                    {mockReadings.temperature[mockReadings.temperature.length - 1].value}°C
+                  </Typography>
+                  <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                    Temperature
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
         </Grid>
-      </TabPanel>
 
-      {/* Temperature Tab */}
-      <TabPanel value={tabValue} index={1}>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h5" gutterBottom>
-            Temperature Data
+        {/* Right Column - Stats Card */}
+        <Grid item xs={12} md={6}>
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 4, 
+              borderRadius: 3, 
+              background: '#FFFFFF', 
+              border: '1px solid #E5E7EB', 
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              height: 'fit-content'
+            }}
+          >
+            <Typography variant="h5" fontWeight={600} gutterBottom color="#111827">
+              Sensor Stats
+            </Typography>
+            <Typography variant="body2" color="#6B7280" paragraph fontWeight={400} sx={{ mb: 3 }}>
+              Current readings from all sensors
+            </Typography>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <ThermostatIcon sx={{ color: '#EF4444', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                      Temperature
+                    </Typography>
+                  </Box>
+                  <Typography variant="h6" fontWeight={600} color="#111827">
+                    {mockReadings.temperature[mockReadings.temperature.length - 1].value}°C
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                      Humidity
+                    </Typography>
+                  </Box>
+                  <Typography variant="h6" fontWeight={600} color="#111827">
+                    {mockReadings.humidity[mockReadings.humidity.length - 1].value}%
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Co2Icon sx={{ color: '#6B7280', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                      CO₂
+                    </Typography>
+                  </Box>
+                  <Typography variant="h6" fontWeight={600} color="#111827">
+                    {mockReadings.co2[mockReadings.co2.length - 1].value} ppm
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <HeightIcon sx={{ color: '#10B981', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                      Distance
+                    </Typography>
+                  </Box>
+                  <Typography variant="h6" fontWeight={600} color="#111827">
+                    {mockReadings.lidar[mockReadings.lidar.length - 1].value} cm
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+
+            {/* Device Status */}
+            <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid #F3F4F6' }}>
+              <Typography variant="subtitle2" color="#6B7280" fontWeight={500} gutterBottom>
+                Device Status
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {device.lowBattery ? (
+                      <>
+                        <BatteryLowIcon sx={{ color: '#F59E0B', mr: 1, fontSize: 18 }} />
+                        <Typography variant="body2" fontWeight={500} color="#111827">
+                          Low Battery
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <BatteryGoodIcon sx={{ color: '#10B981', mr: 1, fontSize: 18 }} />
+                        <Typography variant="body2" fontWeight={500} color="#111827">
+                          Battery OK
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {device.isActive ? (
+                      <>
+                        <SignalGoodIcon sx={{ color: '#10B981', mr: 1, fontSize: 18 }} />
+                        <Typography variant="body2" fontWeight={500} color="#111827">
+                          Strong Signal
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <SignalBadIcon sx={{ color: '#EF4444', mr: 1, fontSize: 18 }} />
+                        <Typography variant="body2" fontWeight={500} color="#111827">
+                          Weak Signal
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Charts Area */}
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          borderRadius: 3,
+          background: '#FFFFFF',
+          border: '1px solid #E5E7EB',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Charts Header with Tabs */}
+        <Box sx={{ borderBottom: '1px solid #F3F4F6', px: 4, pt: 3 }}>
+          <Typography variant="h5" fontWeight={600} color="#111827" gutterBottom>
+            Historical Data
           </Typography>
-          <Typography variant="body1" paragraph>
-            Detailed temperature analysis and historical data will be displayed here.
-          </Typography>
-          {/* Placeholder for future temperature charts and data */}
-          <Box sx={{ height: '400px', bgcolor: '#f5f5f5', borderRadius: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Temperature charts will be displayed here
+          <Tabs 
+            value={chartTabValue} 
+            onChange={handleChartTabChange} 
+            aria-label="chart data tabs"
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                color: '#6B7280',
+                '&.Mui-selected': {
+                  color: '#3B82F6',
+                  fontWeight: 600,
+                }
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#3B82F6',
+              }
+            }}
+          >
+            <Tab label="Temperature" />
+            <Tab label="Humidity" />
+            <Tab label="CO₂ Levels" />
+            <Tab label="Fill Level" />
+            <Tab label="Trends" />
+          </Tabs>
+        </Box>
+
+        {/* Chart Content Areas */}
+        <ChartTabPanel value={chartTabValue} index={0}>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <ThermostatIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
+            <Typography variant="h6" color="#6B7280" gutterBottom>
+              Temperature Charts
+            </Typography>
+            <Typography variant="body2" color="#9CA3AF">
+              Temperature trend analysis and historical data will be displayed here
             </Typography>
           </Box>
-        </Box>
-      </TabPanel>
+        </ChartTabPanel>
 
-      {/* Humidity Tab */}
-      <TabPanel value={tabValue} index={2}>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h5" gutterBottom>
-            Humidity Data
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Detailed humidity analysis and historical data will be displayed here.
-          </Typography>
-          {/* Placeholder for future humidity charts and data */}
-          <Box sx={{ height: '400px', bgcolor: '#f5f5f5', borderRadius: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Humidity charts will be displayed here
+        <ChartTabPanel value={chartTabValue} index={1}>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <WaterDropIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
+            <Typography variant="h6" color="#6B7280" gutterBottom>
+              Humidity Charts
+            </Typography>
+            <Typography variant="body2" color="#9CA3AF">
+              Humidity trend analysis and historical data will be displayed here
             </Typography>
           </Box>
-        </Box>
-      </TabPanel>
+        </ChartTabPanel>
 
-      {/* CO2 Tab */}
-      <TabPanel value={tabValue} index={3}>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h5" gutterBottom>
-            CO₂ Data
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Detailed CO₂ analysis and historical data will be displayed here.
-          </Typography>
-          {/* Placeholder for future CO₂ charts and data */}
-          <Box sx={{ height: '400px', bgcolor: '#f5f5f5', borderRadius: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              CO₂ charts will be displayed here
+        <ChartTabPanel value={chartTabValue} index={2}>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Co2Icon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
+            <Typography variant="h6" color="#6B7280" gutterBottom>
+              CO₂ Level Charts
+            </Typography>
+            <Typography variant="body2" color="#9CA3AF">
+              CO₂ concentration analysis and historical data will be displayed here
             </Typography>
           </Box>
-        </Box>
-      </TabPanel>
+        </ChartTabPanel>
 
-      {/* Fill Level Tab */}
-      <TabPanel value={tabValue} index={4}>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h5" gutterBottom>
-            Fill Level Data
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Detailed fill level analysis and historical data will be displayed here.
-          </Typography>
-          {/* Placeholder for future fill level charts and data */}
-          <Box sx={{ height: '400px', bgcolor: '#f5f5f5', borderRadius: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Fill level charts will be displayed here
+        <ChartTabPanel value={chartTabValue} index={3}>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <HeightIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
+            <Typography variant="h6" color="#6B7280" gutterBottom>
+              Fill Level Charts
+            </Typography>
+            <Typography variant="body2" color="#9CA3AF">
+              Fill level trend analysis and historical data will be displayed here
             </Typography>
           </Box>
-        </Box>
-      </TabPanel>
+        </ChartTabPanel>
 
-      {/* Alerts Tab */}
-      <TabPanel value={tabValue} index={5}>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h5" gutterBottom>
-            Device Alerts
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Alert history and notifications for this device will be displayed here.
-          </Typography>
-          {/* Placeholder for future alerts list */}
-          <Box sx={{ height: '300px', bgcolor: '#f5f5f5', borderRadius: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              No alerts found for this device
+        <ChartTabPanel value={chartTabValue} index={4}>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <CloudIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
+            <Typography variant="h6" color="#6B7280" gutterBottom>
+              Trend Analysis
+            </Typography>
+            <Typography variant="body2" color="#9CA3AF">
+              Combined trend analysis and correlations will be displayed here
             </Typography>
           </Box>
-        </Box>
-      </TabPanel>
-
-      {/* History Tab */}
-      <TabPanel value={tabValue} index={6}>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h5" gutterBottom>
-            Device History
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Complete historical data and events will be displayed here.
-          </Typography>
-          {/* Placeholder for future history timeline */}
-          <Box sx={{ height: '400px', bgcolor: '#f5f5f5', borderRadius: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Device history timeline will be displayed here
-            </Typography>
-          </Box>
-        </Box>
-      </TabPanel>
+        </ChartTabPanel>
+      </Paper>
     </Box>
   );
 };

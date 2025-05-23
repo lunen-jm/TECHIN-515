@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { 
-  Container, 
   Box, 
   Typography, 
   TextField, 
   Button, 
-  Paper, 
   Link,
   Alert,
   CircularProgress,
   Divider,
   Card,
-  CardContent
+  CardContent,
+  Grid,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { Google as GoogleIcon } from '@mui/icons-material';
 import { signInWithEmail, signInWithGoogle } from '../../firebase/services/authService';
@@ -23,6 +24,8 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const isDevMode = process.env.NODE_ENV === 'development';
 
@@ -59,20 +62,39 @@ const Login: React.FC = () => {
     setEmail('test@example.com');
     setPassword('Test123!');
   };
-
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h4" gutterBottom>
-          Farm Sensor Dashboard
-        </Typography>
-        
-        <Paper elevation={3} sx={{ p: 4, width: '100%', mt: 2 }}>
-          <Typography component="h2" variant="h5" textAlign="center" gutterBottom>
-            Sign In
+    <Grid container sx={{ minHeight: '100vh' }}>      {/* Left side - Login Form */}      <Grid        item 
+        xs={12} 
+        md={6} 
+        sx={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          p: { xs: 2, sm: 4, md: 6, lg: 8 },
+          bgcolor: 'background.default',
+          position: 'relative',
+          zIndex: 1,
+          boxShadow: '10px 0 30px -5px rgba(0, 0, 0, 0.3)'
+        }}
+      >        
+        {/* Logo and App Name in top left */}
+        <Box sx={{ position: 'absolute', top: 24, left: 24, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ width: 32, height: 32, bgcolor: 'primary.main', borderRadius: '50%' }}></Box>
+          <Typography variant="subtitle1" fontWeight="600">
+            Farm Sensor Dashboard
+          </Typography>
+        </Box>
+
+        <Box sx={{ maxWidth: 480, width: '100%', mx: 'auto' }}>
+          <Typography component="h1" variant="h4" gutterBottom fontWeight="700">
+            Welcome Back
           </Typography>
           
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
+            Sign in to continue to your dashboard
+          </Typography>
+          
+          {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
           
           <Box component="form" onSubmit={handleEmailSignIn} sx={{ mt: 1 }}>
             <TextField
@@ -121,7 +143,7 @@ const Login: React.FC = () => {
               Sign In with Google
             </Button>
             
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
               <Link component={RouterLink} to="/forgot-password" variant="body2">
                 Forgot password?
               </Link>
@@ -164,10 +186,36 @@ const Login: React.FC = () => {
               </Card>
             </>
           )}
-        </Paper>
-      </Box>
-    </Container>
-  );
+        </Box>
+      </Grid>
+        {/* Right side - Farm Photo (hidden on mobile) */}
+      {!isMobile && (
+        <Grid 
+          item 
+          md={6} 
+          sx={{ 
+            backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(/images/farm-photo-by-matt-benson.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative'
+          }}
+        >
+          <Box 
+            sx={{ 
+              position: 'absolute',
+              bottom: 24,
+              right: 24,
+              color: 'white',
+              textShadow: '0 1px 3px rgba(0,0,0,0.7)'
+            }}
+          >
+            <Typography variant="caption">
+              Photo by Matt Benson
+            </Typography>
+          </Box>
+        </Grid>
+      )}
+    </Grid>  );
 };
 
 export default Login;

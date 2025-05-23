@@ -28,7 +28,7 @@ interface SensorReadingCardProps {
   description: string;
   onClick: () => void;
   percentValue?: number; // Percentage for progress bar
-  sensorType?: 'temperature' | 'humidity' | 'co2' | 'lidar' | 'outdoorTemp';
+  sensorType?: 'temperature' | 'humidity' | 'co2' | 'lidar' | 'outdoorTemp' | 'moisture' | 'rainfall'; // Added 'moisture' and 'rainfall'
   rawValue?: number; // The numeric value without unit for calculations
 }
 
@@ -135,6 +135,19 @@ const SensorReadingCard: React.FC<SensorReadingCardProps> = ({
         if (value < 5 || value > 30) return theme.palette.statusColors.warning;
         return theme.palette.statusColors.optimal;
         
+      case 'moisture':
+        // Assuming moisture is critical below 10% and above 90%
+        if (value < 10) return theme.palette.statusColors.critical;
+        if (value > 90) return theme.palette.statusColors.critical;
+        if (value < 20 || value > 80) return theme.palette.statusColors.warning;
+        return theme.palette.statusColors.optimal;
+        
+      case 'rainfall':
+        // Assuming critical rainfall level is above 50mm
+        if (value > 50) return theme.palette.statusColors.critical;
+        if (value > 20) return theme.palette.statusColors.warning;
+        return theme.palette.statusColors.optimal;
+        
       default:
         return theme.palette.statusColors.neutral;
     }
@@ -176,6 +189,18 @@ const SensorReadingCard: React.FC<SensorReadingCardProps> = ({
         if (value > 30) return 'Hot outdoor conditions';
         return 'Moderate outdoor temperature';
         
+      case 'moisture':
+        if (value < 10) return 'Critical: Moisture level too low';
+        if (value > 90) return 'Critical: Moisture level too high';
+        if (value < 20) return 'Warning: Moisture level slightly low';
+        if (value > 80) return 'Warning: Moisture level slightly high';
+        return 'Optimal moisture level';
+        
+      case 'rainfall':
+        if (value > 50) return 'Critical: Rainfall level too high';
+        if (value > 20) return 'Warning: Rainfall level elevated';
+        return 'Optimal rainfall level';
+        
       default:
         return `Value: ${value}`;
     }
@@ -204,6 +229,17 @@ const SensorReadingCard: React.FC<SensorReadingCardProps> = ({
             (type === 'humidity' && (value < 40 || value > 70)) ||
             (type === 'co2' && value > 800) ||
             (type === 'outdoorTemp' && (value < 5 || value > 30))) {
+          return <WarningIcon fontSize="small" color="warning" />;
+        }
+        return <CheckIcon fontSize="small" color="success" />;
+      
+      case 'moisture':
+      case 'rainfall':
+        // For moisture and rainfall, we might only have critical and optimal states
+        if (value < 10 || (type === 'rainfall' && value > 50)) {
+          return <ErrorIcon fontSize="small" color="error" />;
+        }
+        if (value < 20 || (type === 'rainfall' && value > 20)) {
           return <WarningIcon fontSize="small" color="warning" />;
         }
         return <CheckIcon fontSize="small" color="success" />;

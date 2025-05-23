@@ -4,9 +4,11 @@ import { ThemeProvider, CssBaseline, createTheme, Snackbar, Alert, AlertColor } 
 import FarmDashboard from './components/dashboard/FarmDashboard';
 import FarmDetailView from './components/dashboard/FarmDetailView';
 import DeviceDetailView from './components/dashboard/DeviceDetailView';
+import DeviceLayoutShowcase from './components/DeviceLayoutShowcase';
 import MainLayout from './components/layout/MainLayout';
 import Profile from './components/Profile';
 import AdminPage from './components/AdminPage';
+import SiloShowcase from './components/SiloShowcase';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ForgotPassword from './components/auth/ForgotPassword';
@@ -208,11 +210,25 @@ function App() {
                 </MainLayout>
               </ProtectedRoute>
             } />
-            
-            <Route path="/profile" element={
+              <Route path="/profile" element={
               <ProtectedRoute>
                 <MainLayout>
                   <Profile />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+              <Route path="/silo-showcase" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <SiloShowcase />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/device-layout-showcase" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <DeviceLayoutShowcase />
                 </MainLayout>
               </ProtectedRoute>
             } />

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { 
-  Container, 
   Box, 
   Typography, 
   TextField, 
   Button, 
-  Paper,
   Link,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Grid,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { registerWithEmail } from '../../firebase/services/authService';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -21,6 +22,8 @@ const Register: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,18 +54,38 @@ const Register: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h4" gutterBottom>
-          Farm Sensor Dashboard
-        </Typography>
-        
-        <Paper elevation={3} sx={{ p: 4, width: '100%', mt: 2 }}>
-          <Typography component="h2" variant="h5" textAlign="center" gutterBottom>
+    <Grid container sx={{ minHeight: '100vh' }}>      {/* Left side - Registration Form */}      <Grid        item 
+        xs={12} 
+        md={6} 
+        sx={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          p: { xs: 2, sm: 4, md: 6, lg: 8 },
+          bgcolor: 'background.default',
+          position: 'relative',
+          zIndex: 1,
+          boxShadow: '10px 0 30px -5px rgba(0, 0, 0, 0.3)'
+        }}
+      >        
+        {/* Logo and App Name in top left */}
+        <Box sx={{ position: 'absolute', top: 24, left: 24, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ width: 32, height: 32, bgcolor: 'primary.main', borderRadius: '50%' }}></Box>
+          <Typography variant="subtitle1" fontWeight="600">
+            Farm Sensor Dashboard
+          </Typography>
+        </Box>
+
+        <Box sx={{ maxWidth: 480, width: '100%', mx: 'auto' }}>
+          <Typography component="h1" variant="h4" gutterBottom fontWeight="700">
             Create Account
           </Typography>
           
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
+            Sign up to start monitoring your farm sensors
+          </Typography>
+          
+          {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
           
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
@@ -128,9 +151,36 @@ const Register: React.FC = () => {
               </Link>
             </Box>
           </Box>
-        </Paper>
-      </Box>
-    </Container>
+        </Box>
+      </Grid>
+        {/* Right side - Farm Photo (hidden on mobile) */}
+      {!isMobile && (
+        <Grid 
+          item 
+          md={6} 
+          sx={{ 
+            backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(/images/farm-photo-by-matt-benson.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative'
+          }}
+        >
+          <Box 
+            sx={{ 
+              position: 'absolute',
+              bottom: 24,
+              right: 24,
+              color: 'white',
+              textShadow: '0 1px 3px rgba(0,0,0,0.7)'
+            }}
+          >
+            <Typography variant="caption">
+              Photo by Matt Benson
+            </Typography>
+          </Box>
+        </Grid>
+      )}
+    </Grid>
   );
 };
 
