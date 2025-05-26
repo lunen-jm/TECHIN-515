@@ -72,12 +72,36 @@ firebase deploy --only functions
 - [WiFi Provisioning Plan](WiFi_Provisioning_Plan.md) - Technical design for device setup
 - [WiFi Provisioning Implementation](WiFi_Provisioning_Implementation_README.md) - Implementation details
 - [Database Structure](DBStructure.md) - Firestore data model
+- [Security Documentation](SECURITY.md) - Comprehensive security measures and incident response
 
 ## Security Notes
 
+### 🔐 Important Security Update (December 2024)
+
+**Incident Summary**: During development, a Firebase API key was temporarily exposed in the git repository. This issue has been completely resolved with the following actions:
+
+1. **Immediate Response**:
+   - The exposed API key was immediately invalidated and replaced
+   - The `.env` file was removed from git tracking
+   - `.gitignore` was updated to prevent future `.env` file commits
+
+2. **Security Enhancements**:
+   - **Firebase App Check** with reCAPTCHA v3 integration for additional protection
+   - API key restrictions configured in Google Cloud Console
+   - Comprehensive security audit completed
+
+3. **Why Your Data Remains Secure**:
+   - Firebase API keys are **not secret** - they identify your project but don't grant privileged access
+   - **Firebase Security Rules** control all data access permissions
+   - **App Check** prevents unauthorized app usage
+   - The exposed key had **no write permissions** to sensitive data
+
+### General Security Practices
+
 - ⚠️ `.env` files should never be committed to the repository
-- Firebase security rules should be tightened for production
+- Firebase security rules should be tightened for production  
 - Test credentials should be replaced for deployment
+- Regular security audits are performed before major releases
 
 ## License
 

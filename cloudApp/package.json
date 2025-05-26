@@ -15,7 +15,7 @@
     "@types/node": "^20.10.6",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
-    "firebase": "^11.7.1",
+    "firebase": "^11.8.1",
     "firebase-functions": "^6.3.2",
     "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
