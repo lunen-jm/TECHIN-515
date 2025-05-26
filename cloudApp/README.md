@@ -44,6 +44,17 @@ We've set up the following components:
 - Implement device configuration and settings pages
 - Add data export and reporting features
 
+## ⚠️ API Key Security Best Practices
+
+To prevent exposure of API keys and other sensitive credentials:
+
+1. **NEVER commit `.env` files** with real credentials to GitHub
+2. **Always use `.env.local`** for your development environment (automatically excluded by `.gitignore`)
+3. **Use environment variables** on Netlify for production deployment
+4. **Restrict API keys** in the Google Cloud Console to specific websites/IPs
+5. **Regularly audit** your GitHub repository for accidentally committed secrets
+6. If you accidentally expose an API key, immediately **regenerate it** in the Google Cloud Console
+
 ## Firebase Setup
 
 This application uses Firebase for data storage. Follow these steps to set up your Firebase project:
@@ -54,11 +65,14 @@ This application uses Firebase for data storage. Follow these steps to set up yo
    - Enable Firestore Database in the Firebase console
 
 2. **Configure your environment**
-   - Copy the `.env.template` file to `.env.local`
+   - Copy the `.env.template` file to `.env.local` (NEVER use just `.env` as it may be tracked by git)
    - Get your Firebase config from Project Settings > Your Apps > SDK setup and configuration
    - Fill in the variables in `.env.local` with your Firebase project details:
      ```
      REACT_APP_FIREBASE_API_KEY=your-api-key
+     
+     # ⚠️ SECURITY WARNING ⚠️ 
+     # NEVER commit actual API keys to GitHub! Always use .env.local which is gitignored.
      REACT_APP_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
      REACT_APP_FIREBASE_PROJECT_ID=your-project-id
      REACT_APP_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
