@@ -16,10 +16,12 @@ import {
   Settings as SettingsIcon, 
   ArrowBack as ArrowBackIcon,
   AddCircle as AddCircleIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  Group as GroupIcon
 } from '@mui/icons-material';
-import { getFarm, getFarmDevices } from '../../firebase/services/farmService';
+import { getFarm, getFarmDevices, getUserFarmRole } from '../../firebase/services/farmService';
 import { getDevice } from '../../firebase/services/deviceService';
+import { useAuth } from '../../context/AuthContext';
 import DeviceCard from '../../components/cards/DeviceCard';
 
 interface Farm {
@@ -51,16 +53,27 @@ interface Device {
 const FarmDetailView: React.FC = () => {
   const { farmId } = useParams<{ farmId: string }>();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [farm, setFarm] = useState<Farm | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [userRole, setUserRole] = useState<string | null>(null);
   useEffect(() => {
     const fetchFarmAndDevices = async () => {
-      if (!farmId) return;
+      if (!farmId || !currentUser) return;
       
       try {
         setLoading(true);
+        
+        // Check user's role for this farm
+        const role = await getUserFarmRole(farmId, currentUser.uid);
+        setUserRole(role);
+        
+        if (!role) {
+          console.error('User does not have access to this farm');
+          navigate('/farms');
+          return;
+        }
         
         // Fetch farm details
         const farmData = await getFarm(farmId);
@@ -103,10 +116,8 @@ const FarmDetailView: React.FC = () => {
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchFarmAndDevices();
-  }, [farmId, navigate]);
+    };    fetchFarmAndDevices();
+  }, [farmId, navigate, currentUser]);
 
   const handleDeviceClick = (deviceId: string) => {
     navigate(`/devices/${deviceId}`);
@@ -190,17 +201,27 @@ const FarmDetailView: React.FC = () => {
                   {new Date().toLocaleDateString()}
                 </Typography>
               </Box>
-            </Box>
-          </Box>
-          <Box>
-            <Button 
-              variant="outlined" 
-              startIcon={<SettingsIcon />}
-              onClick={() => navigate(`/farms/${farmId}/settings`)}
-              sx={{ mr: 1.5 }}
-            >
-              Farm Settings
-            </Button>
+            </Box>          </Box>
+          <Box sx={{ display: 'flex', gap: 1.5 }}>            {(userRole === 'owner' || userRole === 'admin') && (
+              <Button 
+                variant="outlined" 
+                startIcon={<GroupIcon />}
+                onClick={() => navigate(`/farms/${farmId}/manage`)}
+                sx={{ mr: 0 }}
+              >
+                Manage Users
+              </Button>
+            )}
+            {(userRole === 'owner' || userRole === 'admin') && (
+              <Button 
+                variant="outlined" 
+                startIcon={<SettingsIcon />}
+                onClick={() => navigate(`/farms/${farmId}/settings`)}
+                sx={{ mr: 0 }}
+              >
+                Farm Settings
+              </Button>
+            )}
             <Button 
               variant="contained" 
               startIcon={<AddCircleIcon />}

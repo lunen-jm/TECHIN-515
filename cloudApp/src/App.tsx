@@ -3,6 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider, CssBaseline, createTheme, Snackbar, Alert, AlertColor } from '@mui/material';
 import FarmDashboard from './components/dashboard/FarmDashboard';
 import FarmDetailView from './components/dashboard/FarmDetailView';
+import FarmsPage from './pages/FarmsPage';
+import FarmCreatePage from './pages/FarmCreatePage';
+import FarmManagementPage from './pages/FarmManagementPage';
+import FarmSettingsPage from './pages/FarmSettingsPage';
+import DevicesPage from './pages/DevicesPage';
 import DeviceDetailView from './components/dashboard/DeviceDetailView';
 import DeviceLayoutShowcase from './components/DeviceLayoutShowcase';
 import DeviceProvisioning from './components/DeviceProvisioning';
@@ -186,20 +191,47 @@ function App() {
                   <FarmDashboard />
                 </MainLayout>
               </ProtectedRoute>
-            } />
-            
-            <Route path="/farms" element={
+            } />              <Route path="/farms" element={
               <ProtectedRoute>
                 <MainLayout>
-                  <FarmDashboard />
+                  <FarmsPage />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+              <Route path="/farms/create" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FarmCreatePage />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+              <Route path="/farms/:farmId/manage" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FarmManagementPage />
                 </MainLayout>
               </ProtectedRoute>
             } />
             
-            <Route path="/farms/:farmId" element={
+            <Route path="/farms/:farmId/settings" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FarmSettingsPage />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+              <Route path="/farms/:farmId" element={
               <ProtectedRoute>
                 <MainLayout>
                   <FarmDetailView />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/devices" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <DevicesPage />
                 </MainLayout>
               </ProtectedRoute>
             } />

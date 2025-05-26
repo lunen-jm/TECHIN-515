@@ -25,6 +25,7 @@ import { initializeSchema, createPredefinedUsers } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import TestDataSeeder from './TestDataSeeder';
 import FirebaseDebug from './debug/FirebaseDebug';
+import TestFarmCreator from './debug/TestFarmCreator';
 import { createTestUser } from '../firebase/services/authService';
 
 const AdminPage: React.FC = () => {
@@ -250,6 +251,24 @@ const AdminPage: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Farm Migration & Management
+              </Typography>
+              <Typography variant="body2" paragraph>
+                Manage multi-user farm functionality. Migrate existing farms to the new multi-user system
+                or create test farms for users.
+              </Typography>
+              
+              <Box sx={{ mt: 2 }}>
+                <TestFarmCreator />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        <Grid item xs={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>

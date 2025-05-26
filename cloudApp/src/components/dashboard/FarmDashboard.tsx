@@ -11,17 +11,26 @@ import {
   Avatar,
   Paper,
   Divider,
-  LinearProgress
+  LinearProgress,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { getUserFarms } from '../../firebase/services/farmService';
+import { getUserFarms, getUserAccessibleFarms } from '../../firebase/services/farmService';
+import { useAuth } from '../../context/AuthContext';
 import { 
   Agriculture as AgricultureIcon, 
   Add as AddIcon,
   DevicesOther as DevicesIcon,
   Warning as WarningIcon,
   LocationOn as LocationIcon,
-  Storage as StorageIcon
+  Storage as StorageIcon,
+  MoreVert as MoreVertIcon,
+  Group as GroupIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 
 interface Farm {
@@ -30,21 +39,27 @@ interface Farm {
   description: string;
   userId: string;
   createdAt: any;
+  userRole?: string; // New field for user's role in the farm
+  memberSince?: any; // New field for when user joined
 }
 
 const FarmDashboard: React.FC = () => {
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const fetchFarms = async () => {
-      try {
-        // In a real app, you'd get the current user ID from authentication
-        // For now, we'll use a placeholder user ID that matches the test data
-        const userId = 'test-user-1';
-        const farmsData = await getUserFarms(userId);
-        setFarms(farmsData);
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }      try {
+        // Use new multi-user farm access function  
+        const farmsData = await getUserAccessibleFarms(currentUser.uid);
+        setFarms(farmsData as Farm[]);
       } catch (error) {
         console.error('Error fetching farms:', error);
       } finally {
@@ -53,10 +68,34 @@ const FarmDashboard: React.FC = () => {
     };
 
     fetchFarms();
-  }, []);
-
+  }, [currentUser]);
   const handleFarmClick = (farmId: string) => {
     navigate(`/farms/${farmId}`);
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, farmId: string) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedFarmId(farmId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedFarmId(null);
+  };
+
+  const handleManageUsers = () => {
+    if (selectedFarmId) {
+      navigate(`/farms/${selectedFarmId}/manage`);
+    }
+    handleMenuClose();
+  };
+
+  const handleFarmSettings = () => {
+    if (selectedFarmId) {
+      navigate(`/farms/${selectedFarmId}/settings`);
+    }
+    handleMenuClose();
   };
   const getFarmBackground = (index: number) => {
     // Always return white for farm cards as per design guidelines
@@ -373,14 +412,13 @@ const FarmDashboard: React.FC = () => {
                     boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
                   }
                 }}
-              >
-                <CardActionArea onClick={() => handleFarmClick(farm.id)} sx={{ flexGrow: 1 }}>
+              >                <CardActionArea onClick={() => handleFarmClick(farm.id)} sx={{ flexGrow: 1 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}>
                         <AgricultureIcon />
                       </Avatar>
-                      <Box>
+                      <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
                           {farm.name}
                         </Typography>
@@ -391,6 +429,19 @@ const FarmDashboard: React.FC = () => {
                           </Typography>
                         </Box>
                       </Box>
+                      {/* Dropdown Menu for Farm Actions */}
+                      {(farm.userRole === 'owner' || farm.userRole === 'admin') && (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleMenuOpen(e, farm.id)}
+                          sx={{ 
+                            ml: 1,
+                            '&:hover': { bgcolor: 'action.hover' }
+                          }}
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                      )}
                     </Box>
                     
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -419,22 +470,47 @@ const FarmDashboard: React.FC = () => {
                     </Box>
                     
                     <Divider sx={{ my: 2 }} />
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="caption" color="text.secondary">
                         Created: {farm.createdAt ? new Date(farm.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown'}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
-                        View Details →
-                      </Typography>
-                    </Box>
-                  </CardContent>
+                      {farm.userRole && (
+                        <Typography variant="caption" sx={{ 
+                          color: farm.userRole === 'owner' ? 'primary.main' : 
+                                 farm.userRole === 'admin' ? 'secondary.main' : 'text.secondary',
+                          fontWeight: 600 
+                        }}>
+                          {farm.userRole}
+                        </Typography>
+                      )}
+                    </Box>                  </CardContent>
                 </CardActionArea>
               </Card>
             </Grid>
-          ))}
-        </Grid>
+          ))}        </Grid>
       )}
+
+      {/* Dropdown Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem onClick={handleManageUsers}>
+          <ListItemIcon>
+            <GroupIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Manage Users</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleFarmSettings}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Farm Settings</ListItemText>
+        </MenuItem>
+      </Menu>
     </Box>
   );
 };
