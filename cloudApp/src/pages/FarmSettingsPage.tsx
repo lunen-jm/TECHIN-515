@@ -44,19 +44,6 @@ interface FarmSettings {
   farmType: string;
 }
 
-interface Farm {
-  id: string;
-  name?: string;
-  description?: string;
-  location?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  size?: string;
-  farmType?: string;
-  userId?: string;
-  createdAt?: any;
-}
-
 const validationSchema = Yup.object({
   name: Yup.string()
     .required('Farm name is required')
@@ -66,9 +53,8 @@ const validationSchema = Yup.object({
     .max(200, 'Description must be less than 200 characters'),
   location: Yup.string()
     .required('Location is required')
-    .max(100, 'Location must be less than 100 characters'),
-  contactPhone: Yup.string()
-    .matches(/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number'),
+    .max(100, 'Location must be less than 100 characters'),  contactPhone: Yup.string()
+    .matches(/^[+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number'),
   contactEmail: Yup.string()
     .email('Please enter a valid email address'),
   size: Yup.string()
@@ -150,21 +136,10 @@ const FarmSettingsPage: React.FC = () => {
           setError('You do not have permission to access farm settings');
           setLoading(false);
           return;
-        }
-
-        // Load farm data
+        }        // Load farm data
         const farm = await getFarm(farmId);
         if (farm) {
           setFarmData(farm);
-          formik.setValues({
-            name: farm.name || '',
-            description: farm.description || '',
-            location: farm.location || '',
-            contactPhone: farm.contactPhone || '',
-            contactEmail: farm.contactEmail || '',
-            size: farm.size || '',
-            farmType: farm.farmType || ''
-          });
         } else {
           setError('Farm not found');
         }
@@ -178,6 +153,22 @@ const FarmSettingsPage: React.FC = () => {
 
     loadFarmData();
   }, [farmId, currentUser]);
+
+  // Update form values when farmData changes
+  useEffect(() => {
+    if (farmData) {
+      formik.setValues({
+        name: farmData.name || '',
+        description: farmData.description || '',
+        location: farmData.location || '',
+        contactPhone: farmData.contactPhone || '',
+        contactEmail: farmData.contactEmail || '',
+        size: farmData.size || '',
+        farmType: farmData.farmType || ''
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [farmData]);
 
   const handleDeleteFarm = async () => {
     if (!farmId || !currentUser || userRole !== 'owner') return;

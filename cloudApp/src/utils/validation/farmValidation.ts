@@ -32,11 +32,10 @@ export const farmValidationSchema = yup.object({
       .string()
       .email('Invalid email format')
       .required('Email is required'),
-    
-    phone: yup
+      phone: yup
       .string()
       .matches(
-        /^[\+]?[(]?[\d\s\-\(\)]{10,}$/,
+        /^[+]?[(]?[\d\s\-()]{10,}$/,
         'Invalid phone number format'
       )
       .required('Phone number is required'),

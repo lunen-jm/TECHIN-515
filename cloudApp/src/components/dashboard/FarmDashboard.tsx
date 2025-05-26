@@ -19,7 +19,7 @@ import {
   ListItemText
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { getUserFarms, getUserAccessibleFarms } from '../../firebase/services/farmService';
+import { getUserAccessibleFarms } from '../../firebase/services/farmService';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Agriculture as AgricultureIcon, 

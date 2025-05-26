@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { NavigateNext as NavigateNextIcon } from '@mui/icons-material';
 import FarmCreateForm from '../components/forms/FarmCreateForm';
-import { createFarm, createFarmWithMembership } from '../firebase/services/farmService';
+import { createFarmWithMembership } from '../firebase/services/farmService';
 import { FarmFormData } from '../utils/validation/farmValidation';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,9 +29,7 @@ const FarmCreatePage: React.FC = () => {
     }
 
     setIsLoading(true);
-    setError(null);
-
-    try {
+    setError(null);    try {
       // Transform form data to match farmService expected format
       const farmData = {
         name: formData.name,
@@ -39,7 +37,7 @@ const FarmCreatePage: React.FC = () => {
         user_id: currentUser.uid,
       };
 
-      const farmId = await createFarmWithMembership(farmData);
+      await createFarmWithMembership(farmData);
       
       setSuccessMessage('Farm created successfully!');
       

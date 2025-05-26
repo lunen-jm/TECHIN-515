@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -54,16 +54,9 @@ const FarmManagementPage: React.FC = () => {
   const [members, setMembers] = useState<FarmMember[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showAddUser, setShowAddUser] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showAddUser, setShowAddUser] = useState(false);  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (farmId && currentUser) {
-      loadFarmData();
-    }
-  }, [farmId, currentUser]);
-
-  const loadFarmData = async () => {
+  const loadFarmData = useCallback(async () => {
     if (!farmId || !currentUser) return;
 
     try {
@@ -100,7 +93,13 @@ const FarmManagementPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [farmId, currentUser]);
+
+  useEffect(() => {
+    if (farmId && currentUser) {
+      loadFarmData();
+    }
+  }, [farmId, currentUser, loadFarmData]);
 
   const handleRemoveUser = async (memberId: string, memberUserId: string) => {
     if (!farmId || !currentUser) return;
