@@ -5,6 +5,7 @@ import FarmDashboard from './components/dashboard/FarmDashboard';
 import FarmDetailView from './components/dashboard/FarmDetailView';
 import DeviceDetailView from './components/dashboard/DeviceDetailView';
 import DeviceLayoutShowcase from './components/DeviceLayoutShowcase';
+import DeviceProvisioning from './components/DeviceProvisioning';
 import MainLayout from './components/layout/MainLayout';
 import Profile from './components/Profile';
 import AdminPage from './components/AdminPage';
@@ -202,15 +203,23 @@ function App() {
                 </MainLayout>
               </ProtectedRoute>
             } />
-            
-            <Route path="/devices/:deviceId" element={
+              <Route path="/devices/:deviceId" element={
               <ProtectedRoute>
                 <MainLayout>
                   <DeviceDetailView />
                 </MainLayout>
               </ProtectedRoute>
             } />
-              <Route path="/profile" element={
+            
+            <Route path="/devices/add" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <DeviceProvisioning />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/profile" element={
               <ProtectedRoute>
                 <MainLayout>
                   <Profile />

@@ -1,14 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
   CardActionArea, 
   Typography, 
   Box, 
-  Chip, 
-  Grid,
-  Tooltip,
-  LinearProgress
+  Chip,
+  Tooltip
 } from '@mui/material';
 import { 
   Thermostat as ThermostatIcon,
@@ -22,6 +20,8 @@ import {
   SignalWifiOff as SignalBadIcon,
   Check as CheckIcon
 } from '@mui/icons-material';
+import SiloIndicator from '../common/SiloIndicator';
+import { getDeviceAlerts } from '../../firebase/services/alertService';
 
 interface DeviceProps {
   device: {
@@ -44,7 +44,27 @@ interface DeviceProps {
 }
 
 const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
-  // Remove unused theme variable
+  const [hasActiveAlerts, setHasActiveAlerts] = useState(false);
+  const [alertsLoading, setAlertsLoading] = useState(true);
+
+  // Check for active alerts on component mount
+  useEffect(() => {
+    const checkAlerts = async () => {
+      try {
+        setAlertsLoading(true);
+        const alerts = await getDeviceAlerts(device.id);
+        const unresolvedAlerts = alerts.filter(alert => !alert.isResolved);
+        setHasActiveAlerts(unresolvedAlerts.length > 0);
+      } catch (error) {
+        console.error('Error checking device alerts:', error);
+        setHasActiveAlerts(false);
+      } finally {
+        setAlertsLoading(false);
+      }
+    };
+
+    checkAlerts();
+  }, [device.id]);
   
   const getStatusLabel = (isActive: boolean) => {
     return isActive ? 'Online' : 'Offline';
@@ -52,63 +72,75 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
 
   // Always return white background as per design guidelines
   const getBackgroundColor = () => '#FFFFFF';
-
-  const getBorderColor = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case 'wheat':
-        return '#FFC107'; // Amber
-      case 'corn':
-        return '#8BC34A'; // Light Green
-      case 'soybean':
-        return '#4CAF50'; // Green
-      case 'rice':
-        return '#00BCD4'; // Cyan
-      case 'barley':
-        return '#FFEB3B'; // Yellow
-      case 'oats':
-        return '#FF9800'; // Orange
-      default:
-        return '#E0E0E0'; // Grey
+  const getBorderColor = (type: string, hasAlerts: boolean, isLoading: boolean) => {
+    // Priority 1: If we're still loading alerts, show neutral color
+    if (isLoading) {
+      return '#E0E0E0'; // Grey while loading
     }
+    
+    // Priority 2: If device has active alerts, show red (critical)
+    if (hasAlerts) {
+      return '#EF4444'; // Red for alerts
+    }
+      // Priority 3: If device is offline, show red (same as bad wifi signals)
+    if (!device.isActive) {
+      return '#EF5350'; // Red for offline (error.main)
+    }
+    
+    // Priority 4: If device has low battery, show amber (warning)
+    if (device.lowBattery) {
+      return '#FFC107'; // Amber for low battery
+    }
+    
+  // Priority 5: All good - use main green
+    return '#4CAF50'; // Main green for good status
   };
-  // Calculate percentage for progress bars
-  const getProgressValue = (reading: number | undefined, max: number, min: number = 0) => {
-    if (reading === undefined) return 0;
-    // Clamp between min and max, then normalize to 0-100
-    const clamped = Math.min(Math.max(reading, min), max);
-    return ((clamped - min) / (max - min)) * 100;
-  };
-  // Calculate progress values for different sensor types
-
-  // Calculate progress values for different sensor types
-  const humidityProgress = getProgressValue(device.latestReadings?.humidity, 100);
-  const tempProgress = getProgressValue(device.latestReadings?.temperature, 40, 0);
-  const co2Progress = getProgressValue(device.latestReadings?.co2, 2000, 400);
+  
+  const getStatusTooltip = () => {
+    if (alertsLoading) return 'Checking alert status...';
+    if (hasActiveAlerts) return 'Device has active alerts';
+    if (!device.isActive) return 'Device is offline';
+    if (device.lowBattery) return 'Low battery warning';
+    return 'Device status is good';
+  };// Calculate percentage for lidar fill level
   const lidarProgress = device.latestReadings?.lidar 
     ? Math.round((300 - device.latestReadings.lidar) / 3) // Convert to percentage (0-100%)
-    : 0;
-    return (
-    <Card 
-      elevation={1}
-      sx={{ 
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: getBackgroundColor(),
-        transition: 'all 0.2s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
-        },
-        borderLeft: `4px solid ${getBorderColor(device.type)}`,
-      }}
-    ><CardActionArea onClick={onClick} sx={{ flexGrow: 1 }}>
-        <CardContent sx={{ p: 3 }}>
-          {/* Header with name and status icons */}
+    : 0;    return (
+    <Tooltip title={getStatusTooltip()} placement="top" arrow>
+      <Card 
+        elevation={1}
+        sx={{ 
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          bgcolor: getBackgroundColor(),
+          transition: 'all 0.2s',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+          },
+          borderLeft: `4px solid ${getBorderColor(device.type, hasActiveAlerts, alertsLoading)}`,
+        }}
+      ><CardActionArea onClick={onClick} sx={{ flexGrow: 1 }}>
+        <CardContent sx={{ p: 3 }}>          {/* Header with name and status icons */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-              {device.name}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                {device.name}
+              </Typography>
+              {hasActiveAlerts && !alertsLoading && (
+                <Tooltip title="Has active alerts">
+                  <Box sx={{ 
+                    ml: 1, 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    bgcolor: '#EF4444',
+                    animation: 'pulse 2s infinite' 
+                  }} />
+                </Tooltip>
+              )}
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {device.lowBattery ? (
                 <Tooltip title="Low Battery">
@@ -156,135 +188,70 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
                 fontWeight: 500 
               }}
             />
-          </Box>
-
-          {/* Sensor readings with progress bars */}
+          </Box>          {/* Sensor readings with bin indicator and stats */}
           {device.latestReadings && (
-            <Grid container spacing={2}>
-              {device.latestReadings.temperature !== undefined && (
-                <Grid item xs={12}>
-                  <Box sx={{ mb: 0.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <ThermostatIcon sx={{ fontSize: 18, color: 'error.main', mr: 1 }} />
-                        <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                          Temperature
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight="600">
-                        {device.latestReadings.temperature}°C
-                      </Typography>
-                    </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={tempProgress} 
-                      sx={{ 
-                        height: 6, 
-                        borderRadius: 3, 
-                        mt: 0.5,
-                        bgcolor: 'rgba(229, 115, 115, 0.2)',
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: 'error.main',
-                        }
-                      }} 
-                    />
-                  </Box>
-                </Grid>
-              )}
-              
-              {device.latestReadings.humidity !== undefined && (
-                <Grid item xs={12}>
-                  <Box sx={{ mb: 0.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <WaterDropIcon sx={{ fontSize: 18, color: 'info.main', mr: 1 }} />
-                        <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                          Humidity
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight="600">
-                        {device.latestReadings.humidity}%
-                      </Typography>
-                    </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={humidityProgress} 
-                      sx={{ 
-                        height: 6, 
-                        borderRadius: 3, 
-                        mt: 0.5,
-                        bgcolor: 'rgba(66, 165, 245, 0.2)',
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: 'info.main',
-                        }
-                      }} 
-                    />
-                  </Box>
-                </Grid>
-              )}
-              
-              {device.latestReadings.co2 !== undefined && (
-                <Grid item xs={12}>
-                  <Box sx={{ mb: 0.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Co2Icon sx={{ fontSize: 18, color: 'text.secondary', mr: 1 }} />
-                        <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                          CO₂
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight="600">
-                        {device.latestReadings.co2} ppm
-                      </Typography>
-                    </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={co2Progress} 
-                      sx={{ 
-                        height: 6, 
-                        borderRadius: 3, 
-                        mt: 0.5,
-                        bgcolor: 'rgba(158, 158, 158, 0.2)',
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: 'text.secondary',
-                        }
-                      }} 
-                    />
-                  </Box>
-                </Grid>
-              )}
-              
+            <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+              {/* Bin indicator for fill level */}
               {device.latestReadings.lidar !== undefined && (
-                <Grid item xs={12}>
+                <Box sx={{ flex: '0 0 auto' }}>
+                  <SiloIndicator
+                    fillPercentage={lidarProgress}
+                    height={100}
+                    width={50}
+                    variant="minimal"
+                    showPercentage={false}
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+                    Fill Level
+                  </Typography>
+                </Box>
+              )}
+              
+              {/* Stats as values */}
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {device.latestReadings.temperature !== undefined && (
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <HeightIcon sx={{ fontSize: 18, color: 'success.main', mr: 1 }} />
+                      <ThermostatIcon sx={{ fontSize: 18, color: 'error.main', mr: 1 }} />
                       <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        Fill Level
+                        Temperature
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="600">
-                      {device.latestReadings.lidar} cm
+                      {device.latestReadings.temperature.toFixed(2)}°C
                     </Typography>
                   </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={lidarProgress} 
-                    sx={{ 
-                      height: 6, 
-                      borderRadius: 3, 
-                      mt: 0.5,
-                      bgcolor: 'rgba(76, 175, 80, 0.2)',
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: 'success.main',
-                      }
-                    }} 
-                  />
-                </Grid>
-              )}
-              
-              {device.latestReadings.outdoorTemp !== undefined && (
-                <Grid item xs={12}>
+                )}
+                
+                {device.latestReadings.humidity !== undefined && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <WaterDropIcon sx={{ fontSize: 18, color: 'info.main', mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        Humidity
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight="600">
+                      {device.latestReadings.humidity.toFixed(2)}%
+                    </Typography>
+                  </Box>
+                )}
+                
+                {device.latestReadings.co2 !== undefined && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Co2Icon sx={{ fontSize: 18, color: 'text.secondary', mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        CO₂
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight="600">
+                      {device.latestReadings.co2.toFixed(2)} ppm
+                    </Typography>
+                  </Box>
+                )}
+                
+                {device.latestReadings.outdoorTemp !== undefined && (
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <CloudIcon sx={{ fontSize: 18, color: 'primary.main', mr: 1 }} />
@@ -293,12 +260,26 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="600">
-                      {device.latestReadings.outdoorTemp}°C
+                      {device.latestReadings.outdoorTemp.toFixed(2)}°C
                     </Typography>
                   </Box>
-                </Grid>
-              )}
-            </Grid>
+                )}
+                
+                {device.latestReadings.lidar !== undefined && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <HeightIcon sx={{ fontSize: 18, color: 'success.main', mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        Distance
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight="600">
+                      {device.latestReadings.lidar.toFixed(2)} cm
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Box>
           )}
           
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
@@ -308,10 +289,10 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
             <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
               View Details →
             </Typography>
-          </Box>
-        </CardContent>
+          </Box>        </CardContent>
       </CardActionArea>
     </Card>
+    </Tooltip>
   );
 };
 

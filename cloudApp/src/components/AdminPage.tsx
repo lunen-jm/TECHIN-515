@@ -24,6 +24,7 @@ import {
 import { initializeSchema, createPredefinedUsers } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import TestDataSeeder from './TestDataSeeder';
+import FirebaseDebug from './debug/FirebaseDebug';
 import { createTestUser } from '../firebase/services/authService';
 
 const AdminPage: React.FC = () => {
@@ -233,8 +234,22 @@ const AdminPage: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        
-        <Grid item xs={12}>
+          <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Firebase Connection Debug
+              </Typography>
+              <Typography variant="body2" paragraph>
+                Check Firebase connectivity and see what data exists in the database.
+              </Typography>
+              
+              <Box sx={{ mt: 2 }}>
+                <FirebaseDebug />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>        <Grid item xs={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>

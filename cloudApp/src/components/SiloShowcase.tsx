@@ -682,10 +682,9 @@ const SiloShowcase: React.FC = () => {
               </Typography>
               
               <Divider sx={{ my: 2 }} />
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Temperature</Typography>
-                <Typography variant="caption" fontWeight={600}>18.5°C</Typography>
+                <Typography variant="caption" fontWeight={600}>18.50°C</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Humidity</Typography>
@@ -733,10 +732,9 @@ const SiloShowcase: React.FC = () => {
               </Typography>
               
               <Divider sx={{ my: 2 }} />
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Temperature</Typography>
-                <Typography variant="caption" fontWeight={600}>22.1°C</Typography>
+                <Typography variant="caption" fontWeight={600}>22.10°C</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Humidity</Typography>
@@ -784,10 +782,9 @@ const SiloShowcase: React.FC = () => {
               </Typography>
               
               <Divider sx={{ my: 2 }} />
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Temperature</Typography>
-                <Typography variant="caption" fontWeight={600} color="warning.main">26.8°C</Typography>
+                <Typography variant="caption" fontWeight={600} color="warning.main">26.80°C</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Humidity</Typography>
@@ -835,10 +832,9 @@ const SiloShowcase: React.FC = () => {
               </Typography>
               
               <Divider sx={{ my: 2 }} />
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Temperature</Typography>
-                <Typography variant="caption" fontWeight={600}>16.3°C</Typography>
+                <Typography variant="caption" fontWeight={600}>16.30°C</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="caption" color="text.secondary">Humidity</Typography>

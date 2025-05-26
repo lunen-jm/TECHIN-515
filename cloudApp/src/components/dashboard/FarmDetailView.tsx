@@ -74,23 +74,21 @@ const FarmDetailView: React.FC = () => {
         
         // Fetch devices associated with this farm
         const deviceIds = await getFarmDevices(farmId);
-        
-        const devicePromises = deviceIds.map((deviceId: string) => getDevice(deviceId));
+          const devicePromises = deviceIds.map((deviceId: string) => getDevice(deviceId));
         const devicesData = await Promise.all(devicePromises);
         
-        // Filter out any null results
-        const validDevices = devicesData.filter(device => device !== null) as Device[];
-        
-        // For demo purposes, add mock latest readings
+        // Filter out any null results and ensure proper typing
+        const validDevices = devicesData.filter((device): device is NonNullable<typeof device> => device !== null);
+          // For demo purposes, add mock latest readings
         // In a real application, you would fetch the latest reading for each sensor type
         const devicesWithReadings = validDevices.map(device => ({
           ...device,
           latestReadings: {
-            temperature: Math.round((Math.random() * 30 + 10) * 10) / 10, // 10-40°C
-            humidity: Math.round(Math.random() * 100), // 0-100%
-            co2: Math.round(Math.random() * 1000 + 400), // 400-1400 ppm
-            lidar: Math.round(Math.random() * 300 + 50), // 50-350 cm
-            outdoorTemp: Math.round((Math.random() * 20 + 5) * 10) / 10, // 5-25°C
+            temperature: parseFloat((Math.random() * 30 + 10).toFixed(2)), // 10-40°C
+            humidity: parseFloat((Math.random() * 100).toFixed(2)), // 0-100%
+            co2: parseFloat((Math.random() * 1000 + 400).toFixed(2)), // 400-1400 ppm
+            lidar: parseFloat((Math.random() * 300 + 50).toFixed(2)), // 50-350 cm
+            outdoorTemp: parseFloat((Math.random() * 20 + 5).toFixed(2)), // 5-25°C
           }
         }));
         

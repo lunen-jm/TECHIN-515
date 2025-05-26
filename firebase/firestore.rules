@@ -1,0 +1,193 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserId() {
+      return request.auth.uid;
+    }
+    
+    function isOwner(resource) {
+      return resource.data.userId == getUserId();
+    }
+    
+    function canAccessFarm(farmId) {
+      return farmId in get(/databases/$(database)/documents/users/$(getUserId())).data.farms;
+    }
+    
+    function isValidDevice() {
+      return request.auth != null && 
+             request.auth.token.device_id != null;
+    }
+    
+    function getDeviceId() {
+      return request.auth.token.device_id;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && userId == getUserId();
+    }
+
+    // Farms collection
+    match /farms/{farmId} {
+      // Users can read/write farms they have access to
+      allow read, write: if isAuthenticated() && canAccessFarm(farmId);
+      
+      // Allow creation of new farms by authenticated users
+      allow create: if isAuthenticated() && 
+                   resource.data.users is list &&
+                   getUserId() in resource.data.users;
+    }
+
+    // Devices collection
+    match /devices/{deviceId} {
+      // Users can read devices from their farms
+      allow read: if isAuthenticated() && canAccessFarm(resource.data.farmId);
+      
+      // Users can create/update devices in their farms
+      allow create, update: if isAuthenticated() && canAccessFarm(resource.data.farmId);
+      
+      // Users can delete devices from their farms
+      allow delete: if isAuthenticated() && canAccessFarm(resource.data.farmId);
+      
+      // Devices can update their own status and readings
+      allow update: if isValidDevice() && 
+                   deviceId == getDeviceId() &&
+                   // Only allow updates to specific fields
+                   request.resource.data.diff(resource.data).affectedKeys()
+                     .hasOnly(['lastSeen', 'status', 'batteryLevel']);
+    }
+
+    // Readings collection
+    match /readings/{readingId} {
+      // Users can read readings from devices in their farms
+      allow read: if isAuthenticated() && 
+                 exists(/databases/$(database)/documents/devices/$(resource.data.deviceId)) &&
+                 canAccessFarm(get(/databases/$(database)/documents/devices/$(resource.data.deviceId)).data.farmId);
+      
+      // Users can create readings for devices in their farms
+      allow create: if isAuthenticated() && 
+                   exists(/databases/$(database)/documents/devices/$(resource.data.deviceId)) &&
+                   canAccessFarm(get(/databases/$(database)/documents/devices/$(resource.data.deviceId)).data.farmId);
+      
+      // Devices can create readings for themselves
+      allow create: if isValidDevice() && 
+                   resource.data.deviceId == getDeviceId() &&
+                   // Ensure required fields are present
+                   resource.data.keys().hasAll(['deviceId', 'timestamp', 'type', 'value']);
+    }
+
+    // Registration codes collection
+    match /registrationCodes/{codeId} {
+      // Users can read their own registration codes
+      allow read: if isAuthenticated() && resource.data.userId == getUserId();
+      
+      // Users can create registration codes for their farms
+      allow create: if isAuthenticated() && 
+                   canAccessFarm(resource.data.farmId) &&
+                   resource.data.userId == getUserId();
+      
+      // Users can update their own registration codes (e.g., to mark as used)
+      allow update: if isAuthenticated() && resource.data.userId == getUserId();
+      
+      // Cloud Functions can read/update registration codes for device registration
+      // This is handled by Firebase Admin SDK with elevated privileges
+      
+      // Allow deletion of expired codes (handled by scheduled function)
+      allow delete: if isAuthenticated() && resource.data.userId == getUserId();
+    }
+
+    // Analytics collection (for dashboard metrics)
+    match /analytics/{document} {
+      // Users can read analytics for their farms
+      allow read: if isAuthenticated() && 
+                 ('farmId' in resource.data ? canAccessFarm(resource.data.farmId) : true);
+      
+      // System can create/update analytics (typically via Cloud Functions)
+      allow create, update: if isAuthenticated();
+    }
+
+    // Alerts collection
+    match /alerts/{alertId} {
+      // Users can read alerts for their farms
+      allow read: if isAuthenticated() && canAccessFarm(resource.data.farmId);
+      
+      // Users can create alerts for their farms
+      allow create: if isAuthenticated() && canAccessFarm(resource.data.farmId);
+      
+      // Users can update/delete their own alerts
+      allow update, delete: if isAuthenticated() && 
+                           canAccessFarm(resource.data.farmId) &&
+                           resource.data.createdBy == getUserId();
+      
+      // Devices can create alerts
+      allow create: if isValidDevice() && 
+                   exists(/databases/$(database)/documents/devices/$(getDeviceId())) &&
+                   resource.data.deviceId == getDeviceId();
+    }
+
+    // Device logs collection (for debugging and monitoring)
+    match /deviceLogs/{logId} {
+      // Users can read logs for devices in their farms
+      allow read: if isAuthenticated() && 
+                 exists(/databases/$(database)/documents/devices/$(resource.data.deviceId)) &&
+                 canAccessFarm(get(/databases/$(database)/documents/devices/$(resource.data.deviceId)).data.farmId);
+      
+      // Devices can create their own logs
+      allow create: if isValidDevice() && resource.data.deviceId == getDeviceId();
+      
+      // System can create logs (via Cloud Functions)
+      allow create: if isAuthenticated();
+    }
+
+    // System configuration (read-only for users)
+    match /config/{document} {
+      allow read: if isAuthenticated();
+    }
+
+    // Firmware updates collection
+    match /firmwareUpdates/{updateId} {
+      // Users can read firmware updates
+      allow read: if isAuthenticated();
+      
+      // Devices can read firmware updates
+      allow read: if isValidDevice();
+      
+      // Only admins can create/update firmware (handled via Cloud Functions)
+    }
+
+    // Default deny rule for all other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// Realtime Database rules (if used for real-time device status)
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Firmware files
+    match /firmware/{fileName} {
+      // Users can read firmware files
+      allow read: if request.auth != null;
+      
+      // Devices can read firmware files
+      allow read: if request.auth != null && request.auth.token.device_id != null;
+    }
+    
+    // Device logs and data exports
+    match /exports/{userId}/{fileName} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

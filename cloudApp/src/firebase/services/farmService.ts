@@ -203,3 +203,6 @@ export const getFarmDevices = async (farmId: string) => {
     throw error;
   }
 };
+
+// Alias for getUserFarms to match the expected function name
+export const getFarms = getUserFarms;

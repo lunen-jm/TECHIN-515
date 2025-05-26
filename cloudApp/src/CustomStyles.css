@@ -107,3 +107,28 @@ h1, h2, h3, h4, h5, h6, .MuiTypography-h1, .MuiTypography-h2,
   border-radius: 8px;
   overflow: hidden;
 }
+
+/* Alert indicator animations */
+@keyframes alert-pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.alert-indicator {
+  animation: alert-pulse 2s infinite ease-in-out;
+}
+
+/* Device card border transitions */
+.device-card {
+  transition: border-left 0.3s ease-in-out;
+}

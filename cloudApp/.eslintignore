@@ -1,0 +1,44 @@
+# Build artifacts and compiled files
+build/
+dist/
+public/static/
+public/build/
+
+# Node modules
+node_modules/
+
+# Compiled JavaScript chunks and bundles
+*.chunk.js
+*.bundle.js
+*.min.js
+
+# Coverage reports
+coverage/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Service worker files
+public/sw.js
+public/workbox-*.js
+
+# Firebase cache and logs
+.firebase/
+firebase-debug.log

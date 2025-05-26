@@ -31,11 +31,11 @@ const mockDevice = {
 };
 
 const mockReadings = {
-  temperature: 24.5,
-  humidity: 62,
-  co2: 850,
+  temperature: 24.50,
+  humidity: 62.00,
+  co2: 850.00,
   fillLevel: 67,
-  lidarDistance: 99,
+  lidarDistance: 99.00,
 };
 
 const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelectedLayout] = useState<string>('layout3');
@@ -107,9 +107,8 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
                   <Typography variant="h6" fontWeight={600} color="#111827">
                     Temperature
                   </Typography>
-                </Box>
-                <Typography variant="h3" fontWeight={700} color="#EF4444">
-                  {mockReadings.temperature}°C
+                </Box>                <Typography variant="h3" fontWeight={700} color="#EF4444">
+                  {mockReadings.temperature.toFixed(2)}°C
                 </Typography>
               </Box>
             </Grid>
@@ -121,9 +120,8 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
                   <Typography variant="h6" fontWeight={600} color="#111827">
                     Humidity
                   </Typography>
-                </Box>
-                <Typography variant="h3" fontWeight={700} color="#3B82F6">
-                  {mockReadings.humidity}%
+                </Box>                <Typography variant="h3" fontWeight={700} color="#3B82F6">
+                  {mockReadings.humidity.toFixed(2)}%
                 </Typography>
               </Box>
             </Grid>
@@ -209,9 +207,8 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
               </Box>
             </Grid>
             <Grid item xs={6}>
-              <Box sx={{ bgcolor: '#FEF2F2', borderRadius: 3, p: 3, border: '1px solid #FECACA' }}>
-                <Typography variant="h2" fontWeight={700} color="#EF4444">
-                  {mockReadings.temperature}°C
+              <Box sx={{ bgcolor: '#FEF2F2', borderRadius: 3, p: 3, border: '1px solid #FECACA' }}>                <Typography variant="h2" fontWeight={700} color="#EF4444">
+                  {mockReadings.temperature.toFixed(2)}°C
                 </Typography>
                 <Typography variant="body1" color="#6B7280" fontWeight={600}>
                   Temp
@@ -243,12 +240,11 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
                 <Typography variant="h6" fontWeight={600} color="#111827">
                   Temperature
                 </Typography>
-                <Typography variant="body2" color="#6B7280">
-                  Internal bin temperature
-                </Typography>
+                <Typography variant="body2" color="#6B7280">                Internal bin temperature
+              </Typography>
               </Box>
               <Typography variant="h4" fontWeight={700} color="#EF4444">
-                {mockReadings.temperature}°C
+                {mockReadings.temperature.toFixed(2)}°C
               </Typography>
             </Box>
 
@@ -259,12 +255,11 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
                 <Typography variant="h6" fontWeight={600} color="#111827">
                   Humidity
                 </Typography>
-                <Typography variant="body2" color="#6B7280">
-                  Relative humidity level
-                </Typography>
+                <Typography variant="body2" color="#6B7280">                Relative humidity level
+              </Typography>
               </Box>
               <Typography variant="h4" fontWeight={700} color="#3B82F6">
-                {mockReadings.humidity}%
+                {mockReadings.humidity.toFixed(2)}%
               </Typography>
             </Box>
 
@@ -411,9 +406,8 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
                 border: '1px solid #E5E7EB',
                 textAlign: 'center'
               }}>
-                <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 48, mb: 2 }} />
-                <Typography variant="h4" fontWeight={700} color="#3B82F6">
-                  {mockReadings.humidity}%
+                <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 48, mb: 2 }} />                <Typography variant="h4" fontWeight={700} color="#3B82F6">
+                  {mockReadings.humidity.toFixed(2)}%
                 </Typography>
                 <Typography variant="body1" color="#6B7280" fontWeight={500}>
                   Humidity
@@ -558,12 +552,11 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
       {/* Neon-style Stats Grid */}
       <Grid item xs={12} md={7}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Grid container spacing={3}>
-            {[
-              { icon: ThermostatIcon, value: `${mockReadings.temperature}°C`, label: 'Temperature', color: '#EF4444' },
-              { icon: WaterDropIcon, value: `${mockReadings.humidity}%`, label: 'Humidity', color: '#3B82F6' },
-              { icon: Co2Icon, value: mockReadings.co2, label: 'CO₂ (ppm)', color: '#10B981' },
-              { icon: HeightIcon, value: mockReadings.lidarDistance, label: 'Distance (cm)', color: '#F59E0B' },
+          <Grid container spacing={3}>            {[
+              { icon: ThermostatIcon, value: `${mockReadings.temperature.toFixed(2)}°C`, label: 'Temperature', color: '#EF4444' },
+              { icon: WaterDropIcon, value: `${mockReadings.humidity.toFixed(2)}%`, label: 'Humidity', color: '#3B82F6' },
+              { icon: Co2Icon, value: mockReadings.co2.toFixed(2), label: 'CO₂ (ppm)', color: '#10B981' },
+              { icon: HeightIcon, value: mockReadings.lidarDistance.toFixed(2), label: 'Distance (cm)', color: '#F59E0B' },
             ].map((stat, index) => (
               <Grid item xs={6} key={index}>
                 <Paper elevation={0} sx={{ 

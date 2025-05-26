@@ -21,7 +21,6 @@ import {
   WaterDrop as WaterDropIcon,
   Co2 as Co2Icon,
   Height as HeightIcon,
-  Cloud as CloudIcon,
   Battery20 as BatteryLowIcon,
     Battery90 as BatteryGoodIcon,
   SignalWifi4Bar as SignalGoodIcon,
@@ -29,7 +28,15 @@ import {
 } from '@mui/icons-material';
 import { getDevice } from '../../firebase/services/deviceService';
 import { getFarm } from '../../firebase/services/farmService';
+import { 
+  getTemperatureReadings,
+  getHumidityReadings,
+  getCO2Readings,
+  getLidarReadings,
+  getOutdoorTempReadings
+} from '../../firebase/services/readingsService';
 import SiloIndicator from '../common/SiloIndicator';
+import SensorChart from '../charts/SensorChart';
 
 interface ChartTabPanelProps {
   children?: React.ReactNode;
@@ -78,36 +85,94 @@ interface Farm {
 
 const DeviceDetailView: React.FC = () => {
   const { deviceId } = useParams<{ deviceId: string }>();
-  const navigate = useNavigate();  const [device, setDevice] = useState<Device | null>(null);
+  const navigate = useNavigate();
+  
+  const [device, setDevice] = useState<Device | null>(null);
   const [farm, setFarm] = useState<Farm | null>(null);
   const [loading, setLoading] = useState(true);
   const [chartTabValue, setChartTabValue] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [mockReadings, setMockReadings] = useState({
-    temperature: generateMockTimeSeriesData(24, 20, 35),
-    humidity: generateMockTimeSeriesData(24, 30, 80),
-    co2: generateMockTimeSeriesData(24, 400, 1200),
-    lidar: generateMockTimeSeriesData(24, 50, 300),
-    outdoorTemp: generateMockTimeSeriesData(24, 5, 25)
-  });
+  const [chartLoading, setChartLoading] = useState(false);
+    // Real sensor data from Firebase
+  const [sensorData, setSensorData] = useState({
+    temperature: [] as any[],
+    humidity: [] as any[],
+    co2: [] as any[],
+    lidar: [] as any[],
+    outdoorTemp: [] as any[]
+  });  // Helper functions to get latest sensor values
+  const getLatestValue = (dataArray: any[], defaultValue: number = 0) => {
+    if (!dataArray || dataArray.length === 0) return defaultValue.toFixed(2);
+    const value = dataArray[dataArray.length - 1]?.value || defaultValue;
+    return value.toFixed(2);
+  };
 
-  // Function to generate mock time series data for demonstration
-  function generateMockTimeSeriesData(points: number, min: number, max: number) {
-    const now = new Date();
-    const data = [];
+  const getLatestTemperature = () => getLatestValue(sensorData.temperature, 25);
+  const getLatestHumidity = () => getLatestValue(sensorData.humidity, 60);
+  const getLatestCO2 = () => getLatestValue(sensorData.co2, 400);
+  const getLatestLidar = () => getLatestValue(sensorData.lidar, 150);
+  
+  // Calculate fill percentage from lidar reading (assuming 300cm is empty, 50cm is full)
+  const getFillPercentage = () => {
+    const lidarValue = getLatestLidar();
+    const fillPercentage = Math.round(((300 - lidarValue) / 250) * 100);
+    return Math.max(0, Math.min(100, fillPercentage)); // Clamp between 0-100%
+  };
+  const fetchSensorData = async (deviceId: string) => {
+    if (!deviceId) return;
     
-    for (let i = points - 1; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60 * 1000); // hourly data
-      const value = Math.round((Math.random() * (max - min) + min) * 10) / 10;
-      data.push({
-        timestamp: time,
-        value: value
+    try {
+      setChartLoading(true);
+      console.log('=== FETCHING SENSOR DATA ===');
+      console.log('Device ID:', deviceId);
+      
+      // Fetch data from Firebase (limit to last 100 readings for performance)
+      const [temperature, humidity, co2, lidar, outdoorTemp] = await Promise.all([
+        getTemperatureReadings(deviceId, 100),
+        getHumidityReadings(deviceId, 100),
+        getCO2Readings(deviceId, 100),
+        getLidarReadings(deviceId, 100),
+        getOutdoorTempReadings(deviceId, 100)
+      ]);      console.log('=== RAW FIREBASE RESPONSES ===');
+      console.log('Temperature data:', temperature);
+      console.log('Humidity data:', humidity);
+      console.log('CO2 data:', co2);
+      console.log('Lidar data:', lidar);
+      console.log('Outdoor temp data:', outdoorTemp);
+
+      console.log('=== DATA LENGTHS ===');
+      console.log('Temperature:', temperature?.length || 0);
+      console.log('Humidity:', humidity?.length || 0);
+      console.log('CO2:', co2?.length || 0);
+      console.log('Lidar:', lidar?.length || 0);
+      console.log('Outdoor temp:', outdoorTemp?.length || 0);
+
+      // Additional debugging - check data structure
+      if (temperature && temperature.length > 0) {
+        console.log('=== SAMPLE TEMPERATURE DATA STRUCTURE ===');
+        console.log('First temperature record:', temperature[0]);
+        console.log('Temperature keys:', Object.keys(temperature[0] || {}));
+      }
+      
+      if (humidity && humidity.length > 0) {
+        console.log('=== SAMPLE HUMIDITY DATA STRUCTURE ===');
+        console.log('First humidity record:', humidity[0]);
+        console.log('Humidity keys:', Object.keys(humidity[0] || {}));
+      }
+
+      setSensorData({
+        temperature: temperature || [],
+        humidity: humidity || [],
+        co2: co2 || [],
+        lidar: lidar || [],
+        outdoorTemp: outdoorTemp || []
       });
+    } catch (error) {
+      console.error('Error fetching sensor data:', error);
+      // Keep empty arrays on error - charts will show "no data" message
+    } finally {
+      setChartLoading(false);
     }
-    
-    return data;
-  }
-
+  };
   useEffect(() => {
     const fetchDeviceAndFarm = async () => {
       if (!deviceId) return;
@@ -115,23 +180,39 @@ const DeviceDetailView: React.FC = () => {
       try {
         setLoading(true);
         
-        // Fetch device details
+        console.log('=== DEVICE DETAIL VIEW DEBUG ===');
+        console.log('Attempting to fetch device with ID:', deviceId);
+          // Fetch device details
         const deviceData = await getDevice(deviceId);
+        console.log('Device data received:', deviceData);
+        
         if (!deviceData) {
-          console.error('Device not found');
-          navigate('/devices');
-          return;
-        }
-        
-        // Cast the deviceData to the Device type
-        const typedDeviceData = deviceData as unknown as Device;
-        setDevice(typedDeviceData);
-        
-        // Fetch associated farm details if available
-        if (typedDeviceData.registeredFarm) {
-          const farmData = await getFarm(typedDeviceData.registeredFarm);
-          if (farmData) {
-            setFarm(farmData as Farm);
+          console.warn('Device not found in devices collection, creating mock device for testing');
+          // Create a mock device for testing purposes if device doesn't exist
+          const mockDevice: Device = {
+            id: deviceId,
+            name: `Test Device ${deviceId}`,
+            type: 'sensor',
+            isActive: true,
+            lowBattery: false,
+            registeredFarm: '',
+            createdAt: new Date(),
+            userId: 'test-user'
+          };
+          setDevice(mockDevice);
+        } else {
+          // Cast the deviceData to the Device type
+          const typedDeviceData = deviceData as unknown as Device;
+          setDevice(typedDeviceData);
+          
+          // Fetch associated farm details if available
+          if (typedDeviceData.registeredFarm) {
+            console.log('Fetching farm with ID:', typedDeviceData.registeredFarm);
+            const farmData = await getFarm(typedDeviceData.registeredFarm);
+            if (farmData) {
+              setFarm(farmData as Farm);
+              console.log('Farm data received:', farmData);
+            }
           }
         }
       } catch (error) {
@@ -142,6 +223,11 @@ const DeviceDetailView: React.FC = () => {
     };
 
     fetchDeviceAndFarm();
+    
+    // Fetch sensor data for charts
+    if (deviceId) {
+      fetchSensorData(deviceId);
+    }
   }, [deviceId, navigate]);
   const handleChartTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setChartTabValue(newValue);
@@ -238,15 +324,72 @@ const DeviceDetailView: React.FC = () => {
                 <> | Farm: <Link component={RouterLink} to={`/farms/${farm.id}`}>{farm.name}</Link></>
               )}
               {' '}| ID: <code>{device.id}</code>
-            </Typography>
+            </Typography>          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {/* Temporarily commenting out test button to fix compilation */}
+            {/*
+            <Button 
+              variant="outlined" 
+              color="secondary"
+              onClick={async () => {
+                if (!deviceId) return;
+                console.log('Adding test data for device:', deviceId);
+                try {
+                  const now = new Date();
+                  const promises = [];
+                  
+                  for (let i = 0; i < 10; i++) {
+                    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
+                      promises.push(
+                      addTemperatureReading({
+                        device_id: deviceId,
+                        temperature_value: parseFloat((20 + Math.random() * 10).toFixed(2)),
+                        timestamp
+                      }),
+                      addHumidityReading({
+                        device_id: deviceId,
+                        humidity_value: parseFloat((40 + Math.random() * 40).toFixed(2)),
+                        timestamp
+                      }),
+                      addCO2Reading({
+                        device_id: deviceId,
+                        co2_value: parseFloat((400 + Math.random() * 800).toFixed(2)),
+                        timestamp
+                      }),
+                      addLidarReading({
+                        device_id: deviceId,
+                        distance_value: parseFloat((50 + Math.random() * 150).toFixed(2)),
+                        timestamp
+                      }),
+                      addOutdoorTempReading({
+                        device_id: deviceId,
+                        outdoor_temp_value: parseFloat((5 + Math.random() * 20).toFixed(2)),
+                        timestamp
+                      })
+                    );
+                  }
+                  
+                  await Promise.all(promises);
+                  console.log('Test data added successfully');
+                  
+                  // Refresh the charts
+                  fetchSensorData(deviceId);
+                } catch (error) {
+                  console.error('Error adding test data:', error);
+                }
+              }}
+            >
+              Add Test Data
+            </Button>
+            */}
+            <Button 
+              variant="outlined" 
+              startIcon={<SettingsIcon />}
+              onClick={() => navigate(`/devices/${deviceId}/settings`)}
+            >
+              Device Settings
+            </Button>
           </Box>
-          <Button 
-            variant="outlined" 
-            startIcon={<SettingsIcon />}
-            onClick={() => navigate(`/devices/${deviceId}/settings`)}
-          >
-            Device Settings
-          </Button>
         </Box>
       </Paper>
 
@@ -281,12 +424,10 @@ const DeviceDetailView: React.FC = () => {
                   fontWeight: 500,
                 }}
               />
-            </Box>
-
-            {/* Large Silo Indicator */}
+            </Box>            {/* Large Silo Indicator */}
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <SiloIndicator
-                fillPercentage={Math.round((300 - mockReadings.lidar[mockReadings.lidar.length - 1].value) / 3)}
+                fillPercentage={getFillPercentage()}
                 label=""
                 variant="minimal"
                 height={200}
@@ -299,17 +440,16 @@ const DeviceDetailView: React.FC = () => {
               <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
                   <Typography variant="h4" fontWeight={700} color="#3B82F6">
-                    {Math.round((300 - mockReadings.lidar[mockReadings.lidar.length - 1].value) / 3)}%
+                    {getFillPercentage()}%
                   </Typography>
                   <Typography variant="body2" color="#6B7280" fontWeight={500}>
                     Fill Level
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={6}>
+              </Grid>              <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
                   <Typography variant="h4" fontWeight={700} color="#10B981">
-                    {mockReadings.temperature[mockReadings.temperature.length - 1].value}°C
+                    {getLatestTemperature()}°C
                   </Typography>
                   <Typography variant="body2" color="#6B7280" fontWeight={500}>
                     Temperature
@@ -348,9 +488,8 @@ const DeviceDetailView: React.FC = () => {
                     <Typography variant="body2" color="#6B7280" fontWeight={500}>
                       Temperature
                     </Typography>
-                  </Box>
-                  <Typography variant="h6" fontWeight={600} color="#111827">
-                    {mockReadings.temperature[mockReadings.temperature.length - 1].value}°C
+                  </Box>                  <Typography variant="h6" fontWeight={600} color="#111827">
+                    {getLatestTemperature()}°C
                   </Typography>
                 </Box>
               </Grid>
@@ -360,10 +499,9 @@ const DeviceDetailView: React.FC = () => {
                     <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 20, mr: 1 }} />
                     <Typography variant="body2" color="#6B7280" fontWeight={500}>
                       Humidity
-                    </Typography>
-                  </Box>
+                    </Typography>                  </Box>
                   <Typography variant="h6" fontWeight={600} color="#111827">
-                    {mockReadings.humidity[mockReadings.humidity.length - 1].value}%
+                    {getLatestHumidity()}%
                   </Typography>
                 </Box>
               </Grid>
@@ -374,9 +512,8 @@ const DeviceDetailView: React.FC = () => {
                     <Typography variant="body2" color="#6B7280" fontWeight={500}>
                       CO₂
                     </Typography>
-                  </Box>
-                  <Typography variant="h6" fontWeight={600} color="#111827">
-                    {mockReadings.co2[mockReadings.co2.length - 1].value} ppm
+                  </Box>                  <Typography variant="h6" fontWeight={600} color="#111827">
+                    {getLatestCO2()} ppm
                   </Typography>
                 </Box>
               </Grid>
@@ -387,9 +524,8 @@ const DeviceDetailView: React.FC = () => {
                     <Typography variant="body2" color="#6B7280" fontWeight={500}>
                       Distance
                     </Typography>
-                  </Box>
-                  <Typography variant="h6" fontWeight={600} color="#111827">
-                    {mockReadings.lidar[mockReadings.lidar.length - 1].value} cm
+                  </Box>                  <Typography variant="h6" fontWeight={600} color="#111827">
+                    {getLatestLidar()} cm
                   </Typography>
                 </Box>
               </Grid>
@@ -455,12 +591,22 @@ const DeviceDetailView: React.FC = () => {
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
           overflow: 'hidden'
         }}
-      >
-        {/* Charts Header with Tabs */}
+      >        {/* Charts Header with Tabs */}
         <Box sx={{ borderBottom: '1px solid #F3F4F6', px: 4, pt: 3 }}>
-          <Typography variant="h5" fontWeight={600} color="#111827" gutterBottom>
-            Historical Data
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5" fontWeight={600} color="#111827">
+              Historical Data
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => deviceId && fetchSensorData(deviceId)}
+              disabled={chartLoading}
+              sx={{ textTransform: 'none' }}
+            >
+              {chartLoading ? 'Refreshing...' : 'Refresh Data'}
+            </Button>
+          </Box>
           <Tabs 
             value={chartTabValue} 
             onChange={handleChartTabChange} 
@@ -489,66 +635,50 @@ const DeviceDetailView: React.FC = () => {
             <Tab label="Fill Level" />
             <Tab label="Trends" />
           </Tabs>
-        </Box>
-
-        {/* Chart Content Areas */}
-        <ChartTabPanel value={chartTabValue} index={0}>
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <ThermostatIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
-            <Typography variant="h6" color="#6B7280" gutterBottom>
-              Temperature Charts
+        </Box>        {/* Chart Content Areas */}        <ChartTabPanel value={chartTabValue} index={0}>
+          <SensorChart
+            data={sensorData.temperature}
+            title="Temperature"
+            unit="°C"
+            color="#EF4444"
+            loading={chartLoading}
+          />
+        </ChartTabPanel><ChartTabPanel value={chartTabValue} index={1}>
+          <SensorChart
+            data={sensorData.humidity}
+            title="Humidity"
+            unit="%"
+            color="#3B82F6"
+            loading={chartLoading}
+          />
+        </ChartTabPanel>        <ChartTabPanel value={chartTabValue} index={2}>
+          <SensorChart
+            data={sensorData.co2}
+            title="CO₂"
+            unit="ppm"
+            color="#6B7280"
+            loading={chartLoading}
+          />
+        </ChartTabPanel>        <ChartTabPanel value={chartTabValue} index={3}>
+          <SensorChart
+            data={sensorData.lidar}
+            title="Fill Level"
+            unit="cm"
+            color="#10B981"
+            loading={chartLoading}
+          />
+        </ChartTabPanel>        <ChartTabPanel value={chartTabValue} index={4}>
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Outdoor Temperature vs Indoor Sensors
             </Typography>
-            <Typography variant="body2" color="#9CA3AF">
-              Temperature trend analysis and historical data will be displayed here
-            </Typography>
-          </Box>
-        </ChartTabPanel>
-
-        <ChartTabPanel value={chartTabValue} index={1}>
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <WaterDropIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
-            <Typography variant="h6" color="#6B7280" gutterBottom>
-              Humidity Charts
-            </Typography>
-            <Typography variant="body2" color="#9CA3AF">
-              Humidity trend analysis and historical data will be displayed here
-            </Typography>
-          </Box>
-        </ChartTabPanel>
-
-        <ChartTabPanel value={chartTabValue} index={2}>
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Co2Icon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
-            <Typography variant="h6" color="#6B7280" gutterBottom>
-              CO₂ Level Charts
-            </Typography>
-            <Typography variant="body2" color="#9CA3AF">
-              CO₂ concentration analysis and historical data will be displayed here
-            </Typography>
-          </Box>
-        </ChartTabPanel>
-
-        <ChartTabPanel value={chartTabValue} index={3}>
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <HeightIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
-            <Typography variant="h6" color="#6B7280" gutterBottom>
-              Fill Level Charts
-            </Typography>
-            <Typography variant="body2" color="#9CA3AF">
-              Fill level trend analysis and historical data will be displayed here
-            </Typography>
-          </Box>
-        </ChartTabPanel>
-
-        <ChartTabPanel value={chartTabValue} index={4}>
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <CloudIcon sx={{ fontSize: 48, color: '#E5E7EB', mb: 2 }} />
-            <Typography variant="h6" color="#6B7280" gutterBottom>
-              Trend Analysis
-            </Typography>
-            <Typography variant="body2" color="#9CA3AF">
-              Combined trend analysis and correlations will be displayed here
-            </Typography>
+            <SensorChart
+              data={sensorData.outdoorTemp}
+              title="Outdoor Temperature"
+              unit="°C"
+              color="#F59E0B"
+              loading={chartLoading}
+            />
           </Box>
         </ChartTabPanel>
       </Paper>
