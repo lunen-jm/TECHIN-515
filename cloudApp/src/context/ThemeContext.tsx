@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Palette, PaletteOptions } from '@mui/material/styles/createPalette';
 
 // Types
 type ThemeMode = 'light' | 'dark';
