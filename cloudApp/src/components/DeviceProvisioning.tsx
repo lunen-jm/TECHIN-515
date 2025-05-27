@@ -204,12 +204,11 @@ const DeviceProvisioning: React.FC = () => {
         Generate a registration code to set up a new ESP32 sensor device
       </Typography>
 
-      <Card>
-        <Tabs
+      <Card>        <Tabs
           value={activeTab}
           onChange={(_, newValue) => setActiveTab(newValue)}
           aria-label="device provisioning tabs"
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
+          sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
         >
           <Tab 
             icon={<Smartphone />} 
@@ -299,9 +298,8 @@ const DeviceProvisioning: React.FC = () => {
                     sx={{ color: 'inherit', borderColor: 'currentColor' }}
                   />
                 </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Paper sx={{ p: 2, bgcolor: 'white', color: 'primary.main' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Paper sx={{ p: 2, bgcolor: 'background.paper', color: 'primary.main' }}>
                     <Typography variant="h4" component="code" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
                       {registrationCode.registrationCode}
                     </Typography>

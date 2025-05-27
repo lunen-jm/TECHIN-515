@@ -28,9 +28,8 @@ const TestDataSeeder: React.FC = () => {
       setLoading(false);
     }
   };
-
   return (
-    <Box sx={{ mt: 3, p: 2, border: '1px dashed grey', borderRadius: 2 }}>
+    <Box sx={{ mt: 3, p: 2, borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)', bgcolor: 'background.default' }}>
       <Typography variant="h6" gutterBottom>
         Development Tools
       </Typography>

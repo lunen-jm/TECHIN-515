@@ -9,8 +9,7 @@ import {
   Chip,
   Accordion,
   AccordionSummary,
-  AccordionDetails,
-  Divider
+  AccordionDetails
 } from '@mui/material';
 import { 
   ExpandMore as ExpandMoreIcon,
@@ -127,17 +126,24 @@ const DevicesPage: React.FC = () => {
             console.error(`Error fetching devices for farm ${farm.id}:`, farmError);
             // Continue with other farms even if one fails
           }
-        }
-
-        // Sort farms by name
-        farmsWithDevicesData.sort((a, b) => a.farm.name.localeCompare(b.farm.name));
+        }        // Sort farms by name
+        farmsWithDevicesData.sort((a, b) => {
+          const nameA = (a.farm as any)?.name || (a.farm as any)?.farmName || 'Unknown Farm';
+          const nameB = (b.farm as any)?.name || (b.farm as any)?.farmName || 'Unknown Farm';
+          return nameA.localeCompare(nameB);
+        });
         
         // Sort devices within each farm by name
         farmsWithDevicesData.forEach(farmData => {
           farmData.devices.sort((a, b) => a.name.localeCompare(b.name));
         });
 
-        setFarmsWithDevices(farmsWithDevicesData);
+        // Final filter to remove any farms without valid farm objects
+        const validFarmsWithDevices = farmsWithDevicesData.filter(farmData => 
+          farmData && farmData.farm && (farmData.farm.id || farmData.devices.length > 0)
+        );
+
+        setFarmsWithDevices(validFarmsWithDevices);
         setTotalDevices(totalDeviceCount);
         setActiveDevices(activeDeviceCount);
       } catch (error) {
@@ -188,10 +194,13 @@ const DevicesPage: React.FC = () => {
         </Box>
         <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
           Monitor and manage all devices across your accessible farms
-        </Typography>
-
-        {/* Summary Stats */}
-        <Paper sx={{ p: 3, mb: 3 }}>
+        </Typography>        {/* Summary Stats */}
+        <Paper sx={{ 
+          p: 3, 
+          mb: 3, 
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          border: 'none'
+        }}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={4}>
               <Box sx={{ textAlign: 'center' }}>
@@ -229,7 +238,12 @@ const DevicesPage: React.FC = () => {
 
       {/* Content */}
       {farmsWithDevices.length === 0 ? (
-        <Paper sx={{ p: 6, textAlign: 'center' }}>
+        <Paper sx={{ 
+          p: 6, 
+          textAlign: 'center',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          border: 'none'
+        }}>
           <DeviceHubIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No devices found
@@ -238,27 +252,34 @@ const DevicesPage: React.FC = () => {
             You don't have access to any farms with devices yet.
           </Typography>
         </Paper>
-      ) : (
-        <Box>
-          {farmsWithDevices.map((farmData, index) => (
-            <Accordion key={farmData.farm.id} defaultExpanded={index === 0} sx={{ mb: 2 }}>
-              <AccordionSummary 
+      ) : (        <Box>
+          {farmsWithDevices
+            .filter(farmData => farmData && farmData.farm) // Extra safety filter
+            .map((farmData, index) => (
+            <Accordion key={farmData.farm?.id || farmData.farm?.name || `unknown-farm-${index}`} defaultExpanded={index === 0} sx={{ 
+              mb: 2,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+              border: 'none',
+              '&:before': { display: 'none' }
+            }}><AccordionSummary 
                 expandIcon={<ExpandMoreIcon />}
                 sx={{ 
-                  bgcolor: 'background.default',
+                  bgcolor: 'background.paper',
+                  px: 3,
+                  py: 2,
                   '&:hover': { bgcolor: 'action.hover' }
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                   <AgricultureIcon sx={{ color: 'primary.main', mr: 2 }} />                  <Box sx={{ flex: 1 }}>
                     <Typography variant="h6" fontWeight="600">
-                      {(farmData.farm as any).name || (farmData.farm as any).farmName || 'Unknown Farm'}
+                      {(farmData.farm as any)?.name || (farmData.farm as any)?.farmName || 'Unknown Farm'}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
                       <Chip 
                         label={`${farmData.devices.length} device${farmData.devices.length !== 1 ? 's' : ''}`}
                         size="small"
-                        sx={{ mr: 1 }}
+                        sx={{ mr: 1, bgcolor: 'background.paper' }}
                       />
                       <Chip 
                         label={`${farmData.devices.filter(d => d.isActive).length} online`}
@@ -268,7 +289,7 @@ const DevicesPage: React.FC = () => {
                         sx={{ mr: 1 }}
                       />
                       <Chip 
-                        label={farmData.farm.userRole}
+                        label={farmData.farm?.userRole || 'Member'}
                         size="small"
                         variant="outlined"
                       />
@@ -276,8 +297,10 @@ const DevicesPage: React.FC = () => {
                   </Box>
                 </Box>
               </AccordionSummary>
-              <AccordionDetails sx={{ pt: 0 }}>
-                <Divider sx={{ mb: 3 }} />
+              <AccordionDetails sx={{ 
+                pt: 0, 
+                bgcolor: 'background.paper' 
+              }}>
                 <Grid container spacing={3}>
                   {farmData.devices.map((device) => (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={device.id}>

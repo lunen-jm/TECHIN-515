@@ -56,15 +56,12 @@ const SensorChart: React.FC<SensorChartProps> = ({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      return (
-        <Box
+      return (        <Box
           sx={{
             bgcolor: 'background.paper',
             p: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 1,
-            boxShadow: 2
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            borderRadius: 1
           }}
         >
           <Typography variant="body2" color="text.secondary" gutterBottom>

@@ -96,9 +96,8 @@ const FarmsPage: React.FC = () => {
     }
     handleMenuClose();
   };
-
   const getFarmBackground = (index: number) => {
-    return '#FFFFFF';
+    return 'background.paper';
   };
 
   if (loading) {
@@ -133,7 +132,7 @@ const FarmsPage: React.FC = () => {
 
       {/* Farms Grid */}
       {farms.length === 0 ? (
-        <Paper elevation={0} sx={{ p: 5, textAlign: 'center', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+        <Paper elevation={0} sx={{ p: 5, textAlign: 'center', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
           <AgricultureIcon sx={{ fontSize: 60, color: 'primary.light', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
             No Farms Found
@@ -156,18 +155,16 @@ const FarmsPage: React.FC = () => {
             <Grid item xs={12} sm={6} md={4} key={farm.id}>
               <Card
                 elevation={1}
-                className="farm-card"
-                sx={{ 
+                className="farm-card"                sx={{
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
                   bgcolor: getFarmBackground(index),
                   transition: 'all 0.3s',
-                  border: '1px solid',
-                  borderColor: 'divider',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)'
                   }
                 }}
               >
@@ -226,8 +223,7 @@ const FarmsPage: React.FC = () => {
                           {index % 4} {/* Mock alert count */}
                         </Typography>
                       </Box>
-                    </Box>
-                    
+                    </Box>                    
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                       <Typography variant="caption" color="text.secondary">
                         Created: {farm.createdAt ? new Date(farm.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown'}

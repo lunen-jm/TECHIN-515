@@ -559,14 +559,12 @@ const SiloShowcase: React.FC = () => {
             </Grid>
           ))}
         </Grid>
-      </Box>
-
-      {/* Usage Examples */}
-      <Paper sx={{ p: 3, mt: 4, backgroundColor: '#f8f9fa' }}>
+      </Box>      {/* Usage Examples */}
+      <Paper sx={{ p: 3, mt: 4, backgroundColor: 'background.default' }}>
         <Typography variant="h6" gutterBottom>
           Usage Examples
-        </Typography>        <Typography variant="body2" component="pre" sx={{ 
-          backgroundColor: '#fff', 
+        </Typography><Typography variant="body2" component="pre" sx={{ 
+          backgroundColor: 'background.paper', 
           p: 2, 
           borderRadius: 1, 
           overflow: 'auto',
@@ -849,8 +847,7 @@ const SiloShowcase: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Implementation Notes */}
-      <Paper sx={{ p: 3, mt: 4, backgroundColor: '#f8f9fa' }}>
+      {/* Implementation Notes */}      <Paper sx={{ p: 3, mt: 4, backgroundColor: 'background.default' }}>
         <Typography variant="h6" gutterBottom>
           Implementation Notes for Tank Pages
         </Typography>
@@ -864,9 +861,8 @@ const SiloShowcase: React.FC = () => {
           </ul>
           
           <strong style={{ marginTop: '16px', display: 'block' }}>Usage Example:</strong>
-        </Typography>
-        <Typography variant="body2" component="pre" sx={{ 
-          backgroundColor: '#fff', 
+        </Typography>        <Typography variant="body2" component="pre" sx={{ 
+          backgroundColor: 'background.paper', 
           p: 2, 
           borderRadius: 1, 
           overflow: 'auto',

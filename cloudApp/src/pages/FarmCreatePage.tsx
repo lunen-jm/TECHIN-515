@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
-  Breadcrumbs,
-  Link,
   Typography,
   Alert,
   Snackbar,
 } from '@mui/material';
-import { NavigateNext as NavigateNextIcon } from '@mui/icons-material';
 import FarmCreateForm from '../components/forms/FarmCreateForm';
 import { createFarmWithMembership } from '../firebase/services/farmService';
 import { FarmFormData } from '../utils/validation/farmValidation';
@@ -74,7 +71,7 @@ const FarmCreatePage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      {/* Breadcrumb Navigation */}
+      {/* Breadcrumb Navigation HIDDEN
       <Box sx={{ mb: 3 }}>
         <Breadcrumbs
           separator={<NavigateNextIcon fontSize="small" />}
@@ -94,6 +91,7 @@ const FarmCreatePage: React.FC = () => {
           <Typography color="text.primary">Create Farm</Typography>
         </Breadcrumbs>
       </Box>
+      */}
 
       {/* Page Header */}
       <Box sx={{ mb: 3 }}>

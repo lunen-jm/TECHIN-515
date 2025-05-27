@@ -16,14 +16,11 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Breadcrumbs,
-  Link,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Delete as DeleteIcon,
   PersonAdd as PersonAddIcon,
-  NavigateNext as NavigateNextIcon,
 } from '@mui/icons-material';
 import { getFarm, getFarmMembers, removeUserFromFarm, getUserFarmRole } from '../firebase/services/farmService';
 import { useAuth } from '../context/AuthContext';
@@ -157,7 +154,7 @@ const FarmManagementPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      {/* Breadcrumb Navigation */}
+      {/* Breadcrumb Navigation HIDDEN
       <Box sx={{ mb: 3 }}>
         <Breadcrumbs
           separator={<NavigateNextIcon fontSize="small" />}
@@ -179,6 +176,7 @@ const FarmManagementPage: React.FC = () => {
           </Typography>
         </Breadcrumbs>
       </Box>
+      */}
 
       {/* Page Header */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

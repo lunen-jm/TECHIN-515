@@ -161,7 +161,7 @@ const Login: React.FC = () => {
                 </Typography>
               </Divider>
               
-              <Card variant="outlined" sx={{ mb: 2, bgcolor: '#f5f5f5' }}>
+              <Card variant="outlined" sx={{ mb: 2, bgcolor: 'background.default' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     Test Account

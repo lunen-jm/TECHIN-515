@@ -8,10 +8,8 @@ import {
   Paper,
   Chip,
   IconButton,
-  Breadcrumbs,
-  Link
 } from '@mui/material';
-import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, 
   ArrowBack as ArrowBackIcon,
@@ -149,19 +147,31 @@ const FarmDetailView: React.FC = () => {
   }
   return (
     <Box>
-      {/* Breadcrumb Navigation */}
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-        <Link component={RouterLink} underline="hover" color="inherit" to="/">
-          Dashboard
-        </Link>
-        <Link component={RouterLink} underline="hover" color="inherit" to="/farms">
-          Farms
-        </Link>
-        <Typography color="text.primary">{farm.name}</Typography>
-      </Breadcrumbs>
+      {/* Breadcrumb Navigation HIDDEN
+      <Box sx={{ 
+        bgcolor: 'background.paper', 
+        pt: 1.5, 
+        pb: 1.5, 
+        mb: 3,
+        ml: -3, // Counteract MainLayout's p:3
+        mr: -3, // Counteract MainLayout's p:3
+        pl: 3,  // Add padding back inside the bar
+        pr: 3
+      }}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link component={RouterLink} underline="hover" color="inherit" to="/">
+            Dashboard
+          </Link>
+          <Link component={RouterLink} underline="hover" color="inherit" to="/farms">
+            Farms
+          </Link>
+          <Typography color="text.primary">{farm.name}</Typography>
+        </Breadcrumbs>
+      </Box>
+      */}
 
       {/* Farm Header */}
-      <Paper elevation={0} sx={{ p: 4, mb: 4, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+      <Paper elevation={0} sx={{ p: 4, mb: 4, bgcolor: 'background.paper', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -248,7 +258,7 @@ const FarmDetailView: React.FC = () => {
       </Box>
 
       {devices.length === 0 ? (
-        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
           <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
             No Devices Found
           </Typography>

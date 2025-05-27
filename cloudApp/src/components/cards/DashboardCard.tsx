@@ -19,20 +19,18 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   onClick,
   color = 'primary.main',
 }) => {
-  return (
-    <Card 
-      elevation={1} 
+  return (    <Card 
+      elevation={0} 
       sx={{ 
         minWidth: 275, 
         maxWidth: 345, 
         m: 2, 
-        border: '1px solid',
-        borderColor: 'divider',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         borderRadius: 3,
         transition: 'all 0.2s',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.12)'
         },
         bgcolor: 'background.paper'
       }}

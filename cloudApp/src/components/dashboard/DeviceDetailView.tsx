@@ -4,7 +4,6 @@ import {
   Grid, 
   Box,
   Paper,
-  Breadcrumbs,
   Link,
   CircularProgress,
   Button,
@@ -260,7 +259,7 @@ const DeviceDetailView: React.FC = () => {
 
   return (
     <Box>
-      {/* Breadcrumb Navigation */}
+      {/* Breadcrumb Navigation HIDDEN
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
         <Link component={RouterLink} underline="hover" color="inherit" to="/">
           Dashboard
@@ -275,6 +274,7 @@ const DeviceDetailView: React.FC = () => {
         </Link>
         <Typography color="text.primary">{device.name}</Typography>
       </Breadcrumbs>
+      */}
 
       {/* Device Header */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'background.paper', borderRadius: 2 }}>
@@ -398,19 +398,16 @@ const DeviceDetailView: React.FC = () => {
         {/* Left Column - Large Grain Bin Card */}
         <Grid item xs={12} md={6}>
           <Paper 
-            elevation={0} 
-            sx={{ 
+            elevation={0}            sx={{ 
               p: 4, 
               height: 'fit-content', 
               borderRadius: 3,
-              background: '#FFFFFF',
-              border: '1px solid #E5E7EB',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              background: 'background.paper',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}
           >
             {/* Device Title and Status */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-              <Typography variant="h5" fontWeight={600} sx={{ color: '#111827' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>              <Typography variant="h5" fontWeight={600} sx={{ color: 'text.primary' }}>
                 {device.type || 'Grain Storage'}
               </Typography>
               <Chip 
@@ -433,25 +430,21 @@ const DeviceDetailView: React.FC = () => {
                 height={200}
                 width={100}
               />
-            </Box>
-
-            {/* Key Metrics */}
+            </Box>            {/* Key Metrics */}
             <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
-                  <Typography variant="h4" fontWeight={700} color="#3B82F6">
+              <Grid item xs={6}>                <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
+                  <Typography variant="h4" fontWeight={700} color="info.main">
                     {getFillPercentage()}%
                   </Typography>
-                  <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
                     Fill Level
                   </Typography>
                 </Box>
-              </Grid>              <Grid item xs={6}>
-                <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+              </Grid>              <Grid item xs={6}>                <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
                   <Typography variant="h4" fontWeight={700} color="#10B981">
                     {getLatestTemperature()}°C
                   </Typography>
-                  <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
                     Temperature
                   </Typography>
                 </Box>
@@ -463,68 +456,59 @@ const DeviceDetailView: React.FC = () => {
         {/* Right Column - Stats Card */}
         <Grid item xs={12} md={6}>
           <Paper 
-            elevation={0} 
-            sx={{ 
+            elevation={0}            sx={{ 
               p: 4, 
               borderRadius: 3, 
-              background: '#FFFFFF', 
-              border: '1px solid #E5E7EB', 
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              background: 'background.paper', 
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               height: 'fit-content'
             }}
-          >
-            <Typography variant="h5" fontWeight={600} gutterBottom color="#111827">
+          >            <Typography variant="h5" fontWeight={600} gutterBottom color="text.primary">
               Sensor Stats
             </Typography>
-            <Typography variant="body2" color="#6B7280" paragraph fontWeight={400} sx={{ mb: 3 }}>
+            <Typography variant="body2" color="text.secondary" paragraph fontWeight={400} sx={{ mb: 3 }}>
               Current readings from all sensors
             </Typography>
-            
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+              <Grid container spacing={2}>              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <ThermostatIcon sx={{ color: '#EF4444', fontSize: 20, mr: 1 }} />
-                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                    <ThermostatIcon sx={{ color: 'error.main', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Temperature
                     </Typography>
-                  </Box>                  <Typography variant="h6" fontWeight={600} color="#111827">
+                  </Box>                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     {getLatestTemperature()}°C
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={6}>
-                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+              </Grid>              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 20, mr: 1 }} />
-                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                    <WaterDropIcon sx={{ color: 'info.main', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Humidity
                     </Typography>                  </Box>
-                  <Typography variant="h6" fontWeight={600} color="#111827">
+                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     {getLatestHumidity()}%
                   </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6}>
-                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+                </Box>              </Grid>              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Co2Icon sx={{ color: '#6B7280', fontSize: 20, mr: 1 }} />
-                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                    <Co2Icon sx={{ color: 'text.secondary', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       CO₂
                     </Typography>
-                  </Box>                  <Typography variant="h6" fontWeight={600} color="#111827">
+                  </Box>                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     {getLatestCO2()} ppm
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={6}>
-                <Box sx={{ p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+              </Grid>              <Grid item xs={6}>
+                <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <HeightIcon sx={{ color: '#10B981', fontSize: 20, mr: 1 }} />
-                    <Typography variant="body2" color="#6B7280" fontWeight={500}>
+                    <HeightIcon sx={{ color: 'success.main', fontSize: 20, mr: 1 }} />
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Distance
                     </Typography>
-                  </Box>                  <Typography variant="h6" fontWeight={600} color="#111827">
+                  </Box>                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     {getLatestLidar()} cm
                   </Typography>
                 </Box>
@@ -532,8 +516,8 @@ const DeviceDetailView: React.FC = () => {
             </Grid>
 
             {/* Device Status */}
-            <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid #F3F4F6' }}>
-              <Typography variant="subtitle2" color="#6B7280" fontWeight={500} gutterBottom>
+            <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="subtitle2" color="text.secondary" fontWeight={500} gutterBottom>
                 Device Status
               </Typography>
               <Grid container spacing={2}>
@@ -541,15 +525,13 @@ const DeviceDetailView: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {device.lowBattery ? (
                       <>
-                        <BatteryLowIcon sx={{ color: '#F59E0B', mr: 1, fontSize: 18 }} />
-                        <Typography variant="body2" fontWeight={500} color="#111827">
+                        <BatteryLowIcon sx={{ color: 'warning.main', mr: 1, fontSize: 18 }} />                        <Typography variant="body2" fontWeight={500} color="text.primary">
                           Low Battery
                         </Typography>
                       </>
                     ) : (
                       <>
-                        <BatteryGoodIcon sx={{ color: '#10B981', mr: 1, fontSize: 18 }} />
-                        <Typography variant="body2" fontWeight={500} color="#111827">
+                        <BatteryGoodIcon sx={{ color: 'success.main', mr: 1, fontSize: 18 }} />                        <Typography variant="body2" fontWeight={500} color="text.primary">
                           Battery OK
                         </Typography>
                       </>
@@ -560,15 +542,13 @@ const DeviceDetailView: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {device.isActive ? (
                       <>
-                        <SignalGoodIcon sx={{ color: '#10B981', mr: 1, fontSize: 18 }} />
-                        <Typography variant="body2" fontWeight={500} color="#111827">
+                        <SignalGoodIcon sx={{ color: 'success.main', mr: 1, fontSize: 18 }} />                        <Typography variant="body2" fontWeight={500} color="text.primary">
                           Strong Signal
                         </Typography>
                       </>
                     ) : (
                       <>
-                        <SignalBadIcon sx={{ color: '#EF4444', mr: 1, fontSize: 18 }} />
-                        <Typography variant="body2" fontWeight={500} color="#111827">
+                        <SignalBadIcon sx={{ color: 'error.main', mr: 1, fontSize: 18 }} />                        <Typography variant="body2" fontWeight={500} color="text.primary">
                           Weak Signal
                         </Typography>
                       </>
@@ -579,22 +559,17 @@ const DeviceDetailView: React.FC = () => {
             </Box>
           </Paper>
         </Grid>
-      </Grid>
-
-      {/* Charts Area */}
-      <Paper 
+      </Grid>      {/* Charts Area */}      <Paper 
         elevation={0} 
         sx={{ 
           borderRadius: 3,
-          background: '#FFFFFF',
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          background: 'background.paper',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           overflow: 'hidden'
         }}
-      >        {/* Charts Header with Tabs */}
-        <Box sx={{ borderBottom: '1px solid #F3F4F6', px: 4, pt: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h5" fontWeight={600} color="#111827">
+      >{/* Charts Header with Tabs */}
+        <Box sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 4, pt: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>            <Typography variant="h5" fontWeight={600} color="text.primary">
               Historical Data
             </Typography>
             <Button
@@ -612,20 +587,19 @@ const DeviceDetailView: React.FC = () => {
             onChange={handleChartTabChange} 
             aria-label="chart data tabs"
             variant="scrollable"
-            scrollButtons="auto"
-            sx={{
+            scrollButtons="auto"            sx={{
               '& .MuiTab-root': {
                 textTransform: 'none',
                 fontWeight: 500,
                 fontSize: '0.875rem',
-                color: '#6B7280',
+                color: 'text.secondary',
                 '&.Mui-selected': {
-                  color: '#3B82F6',
+                  color: 'info.main',
                   fontWeight: 600,
                 }
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#3B82F6',
+                backgroundColor: 'info.main',
               }
             }}
           >

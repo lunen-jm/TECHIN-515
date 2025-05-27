@@ -46,9 +46,9 @@ const MinimalSilo: React.FC<MinimalSiloProps> = ({
             width,
             height,
             position: 'relative',
-            backgroundColor: '#f8f9fa',
+            backgroundColor: 'background.default',
             borderRadius: '12px 12px 4px 4px',
-            border: '1px solid #e9ecef',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             overflow: 'hidden',
           }}
         >
@@ -90,8 +90,9 @@ const MinimalSilo: React.FC<MinimalSiloProps> = ({
             width,
             height,
             position: 'relative',
-            backgroundColor: '#f1f3f4',
+            backgroundColor: 'background.default',
             borderRadius: width / 2,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             overflow: 'hidden',
           }}
         >
@@ -133,7 +134,8 @@ const MinimalSilo: React.FC<MinimalSiloProps> = ({
             width,
             height,
             position: 'relative',
-            backgroundColor: '#f5f5f5',
+            backgroundColor: 'background.default',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             overflow: 'hidden',
           }}
         >
@@ -159,7 +161,7 @@ const MinimalSilo: React.FC<MinimalSiloProps> = ({
     );
   }
 
-  // Outlined variant - just borders
+  // Outlined variant - just borders (keep minimal border styling)
   if (variant === 'outlined') {
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={0.5}>
@@ -174,7 +176,7 @@ const MinimalSilo: React.FC<MinimalSiloProps> = ({
             width,
             height,
             position: 'relative',
-            border: '2px solid #e0e0e0',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             borderRadius: '8px 8px 2px 2px',
             overflow: 'hidden',
             backgroundColor: 'transparent',

@@ -262,17 +262,15 @@ const SensorReadingCard: React.FC<SensorReadingCardProps> = ({
   const calculatedFillLevel = sensorType === 'lidar' && rawValue !== undefined ? 
     calculateFillLevel(sensorType, rawValue) : percentValue;
 
-  return (
-    <Card 
-      elevation={1}
+  return (    <Card 
+      elevation={0}
       sx={{ 
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.2s',
         borderRadius: 3,
-        border: '1px solid',
-        borderColor: 'divider',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: '0 8px 16px rgba(0, 0, 0, 0.08)'
@@ -362,14 +360,12 @@ const SensorReadingCard: React.FC<SensorReadingCardProps> = ({
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
               {description}
-            </Typography>
-            <Box sx={{ 
+            </Typography>            <Box sx={{ 
               bgcolor: 'background.default', 
               p: 0.75, 
               px: 1.5, 
               borderRadius: 10,
-              border: '1px solid',
-              borderColor: 'divider' 
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
             }}>
               <Typography variant="caption" color="text.secondary">
                 {formattedTime}

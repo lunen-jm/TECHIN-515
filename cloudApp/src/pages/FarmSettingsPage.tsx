@@ -8,8 +8,6 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Breadcrumbs,
-  Link,
   Grid,
   FormControl,
   InputLabel,
@@ -23,7 +21,6 @@ import {
   DialogContentText
 } from '@mui/material';
 import {
-  NavigateNext as NavigateNextIcon,
   Settings as SettingsIcon,
   Save as SaveIcon,
   Delete as DeleteIcon
@@ -214,7 +211,7 @@ const FarmSettingsPage: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 3 }}>
-      {/* Breadcrumb Navigation */}
+      {/* Breadcrumb Navigation HIDDEN
       <Box sx={{ mb: 3 }}>
         <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
           <Link
@@ -242,6 +239,7 @@ const FarmSettingsPage: React.FC = () => {
           <Typography color="text.primary">Settings</Typography>
         </Breadcrumbs>
       </Box>
+      */}
 
       {/* Page Header */}
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>

@@ -96,10 +96,9 @@ const FarmDashboard: React.FC = () => {
       navigate(`/farms/${selectedFarmId}/settings`);
     }
     handleMenuClose();
-  };
-  const getFarmBackground = (index: number) => {
-    // Always return white for farm cards as per design guidelines
-    return '#FFFFFF';
+  };  const getFarmBackground = (index: number) => {
+    // Return theme-aware background for farm cards
+    return 'background.paper';
   };
 
   // Mock alert counts for the dashboard
@@ -151,8 +150,7 @@ const FarmDashboard: React.FC = () => {
       {farms.length > 0 && (
         <Grid container spacing={3} sx={{ mb: 5 }}>
           {/* Capacity Overview */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={0} className="dashboard-section" sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
+          <Grid item xs={12} md={6}>            <Paper elevation={0} className="dashboard-section" sx={{ p: 3, borderRadius: 2, height: '100%', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
               <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                 <StorageIcon sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>Storage Capacity Overview</Typography>
@@ -228,9 +226,8 @@ const FarmDashboard: React.FC = () => {
               </Box>
             </Paper>
           </Grid>
-            {/* Alerts Section */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={0} className="dashboard-section" sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
+            {/* Alerts Section */}          <Grid item xs={12} md={6}>
+            <Paper elevation={0} className="dashboard-section" sx={{ p: 3, borderRadius: 2, height: '100%', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
               <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                 <WarningIcon sx={{ mr: 1, color: 'warning.main' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>Alerts Center</Typography>
@@ -244,12 +241,14 @@ const FarmDashboard: React.FC = () => {
                       p: 2, 
                       borderRadius: 2, 
                       bgcolor: 'background.default', 
-                      border: '1px solid', 
-                      borderColor: alertCounts.devices > 0 ? 'error.light' : 'divider',
+                      border: alertCounts.devices > 0 ? '2px solid' : '1px solid',
+                      borderColor: alertCounts.devices > 0 ? 'error.main' : 'divider',
+                      boxShadow: alertCounts.devices > 0 ? '0 2px 8px rgba(244, 67, 54, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
                       transition: 'all 0.2s',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: alertCounts.devices > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : 'none'
+                        boxShadow: alertCounts.devices > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : '0 4px 12px rgba(0, 0, 0, 0.12)',
+                        borderColor: alertCounts.devices > 0 ? 'error.dark' : 'primary.main'
                       }
                     }}
                   >
@@ -270,12 +269,14 @@ const FarmDashboard: React.FC = () => {
                       p: 2, 
                       borderRadius: 2, 
                       bgcolor: 'background.default', 
-                      border: '1px solid', 
-                      borderColor: alertCounts.co2 > 0 ? 'error.light' : 'divider',
+                      border: alertCounts.co2 > 0 ? '2px solid' : '1px solid',
+                      borderColor: alertCounts.co2 > 0 ? 'error.main' : 'divider',
+                      boxShadow: alertCounts.co2 > 0 ? '0 2px 8px rgba(244, 67, 54, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
                       transition: 'all 0.2s',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: alertCounts.co2 > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : 'none'
+                        boxShadow: alertCounts.co2 > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : '0 4px 12px rgba(0, 0, 0, 0.12)',
+                        borderColor: alertCounts.co2 > 0 ? 'error.dark' : 'primary.main'
                       }
                     }}
                   >
@@ -296,12 +297,14 @@ const FarmDashboard: React.FC = () => {
                       p: 2, 
                       borderRadius: 2, 
                       bgcolor: 'background.default', 
-                      border: '1px solid', 
-                      borderColor: alertCounts.temperature > 0 ? 'error.light' : 'divider',
+                      border: alertCounts.temperature > 0 ? '2px solid' : '1px solid',
+                      borderColor: alertCounts.temperature > 0 ? 'error.main' : 'divider',
+                      boxShadow: alertCounts.temperature > 0 ? '0 2px 8px rgba(244, 67, 54, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
                       transition: 'all 0.2s',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: alertCounts.temperature > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : 'none'
+                        boxShadow: alertCounts.temperature > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : '0 4px 12px rgba(0, 0, 0, 0.12)',
+                        borderColor: alertCounts.temperature > 0 ? 'error.dark' : 'primary.main'
                       }
                     }}
                   >
@@ -322,12 +325,14 @@ const FarmDashboard: React.FC = () => {
                       p: 2, 
                       borderRadius: 2, 
                       bgcolor: 'background.default', 
-                      border: '1px solid', 
-                      borderColor: alertCounts.humidity > 0 ? 'error.light' : 'divider',
+                      border: alertCounts.humidity > 0 ? '2px solid' : '1px solid',
+                      borderColor: alertCounts.humidity > 0 ? 'error.main' : 'divider',
+                      boxShadow: alertCounts.humidity > 0 ? '0 2px 8px rgba(244, 67, 54, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
                       transition: 'all 0.2s',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: alertCounts.humidity > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : 'none'
+                        boxShadow: alertCounts.humidity > 0 ? '0 4px 12px rgba(244, 67, 54, 0.15)' : '0 4px 12px rgba(0, 0, 0, 0.12)',
+                        borderColor: alertCounts.humidity > 0 ? 'error.dark' : 'primary.main'
                       }
                     }}
                   >
@@ -343,11 +348,11 @@ const FarmDashboard: React.FC = () => {
                   </Paper>
                 </Grid>
               </Grid>
-                <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Button 
+                <Box sx={{ mt: 3, textAlign: 'center' }}>                <Button 
                   variant="contained" 
                   color="warning"
                   startIcon={<WarningIcon />}
+                  onClick={() => navigate('/alerts')}
                   sx={{ 
                     borderRadius: 2,
                     boxShadow: 'none',
@@ -376,7 +381,7 @@ const FarmDashboard: React.FC = () => {
       </Box>
 
       {farms.length === 0 ? (
-        <Paper elevation={0} sx={{ p: 5, textAlign: 'center', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+        <Paper elevation={0} sx={{ p: 5, textAlign: 'center', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
           <AgricultureIcon sx={{ fontSize: 60, color: 'primary.light', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
             No Farms Found
@@ -395,9 +400,8 @@ const FarmDashboard: React.FC = () => {
         </Paper>
       ) : (        <Grid container spacing={3} className="farm-list-container">
           {farms.map((farm, index) => (
-            <Grid item xs={12} sm={6} md={4} key={farm.id}>
-              <Card
-                elevation={1}
+            <Grid item xs={12} sm={6} md={4} key={farm.id}>              <Card
+                elevation={0}
                 className="farm-card"
                 sx={{ 
                   height: '100%',
@@ -405,14 +409,13 @@ const FarmDashboard: React.FC = () => {
                   flexDirection: 'column',
                   bgcolor: getFarmBackground(index),
                   transition: 'all 0.3s',
-                  border: '1px solid',
-                  borderColor: 'divider',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
                   }
                 }}
-              >                <CardActionArea onClick={() => handleFarmClick(farm.id)} sx={{ flexGrow: 1 }}>
+              ><CardActionArea onClick={() => handleFarmClick(farm.id)} sx={{ flexGrow: 1 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}>

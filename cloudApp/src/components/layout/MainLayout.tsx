@@ -17,7 +17,9 @@ import {
   Avatar,
   Tooltip,
   Menu,
-  MenuItem
+  MenuItem,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import { 
   Menu as MenuIcon, 
@@ -30,10 +32,13 @@ import {
   Person as PersonIcon,
   AdminPanelSettings as AdminIcon,
   Logout as LogoutIcon,
-  AccountCircle
+  AccountCircle,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useThemeMode } from '../../context/ThemeContext';
 import { signOutUser } from '../../firebase/services/authService';
 
 const drawerWidth = 240;
@@ -46,6 +51,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
+  const { mode, toggleTheme } = useThemeMode();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,11 +79,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       console.error('Error signing out:', error);
     }
   };
-
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Farms', icon: <AgricultureIcon />, path: '/farms' },
     { text: 'Devices', icon: <DevicesIcon />, path: '/devices' },
+    { text: 'Alerts', icon: <NotificationsIcon />, path: '/alerts' },
     { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
     ...(isDevMode ? [{ text: 'Admin', icon: <AdminIcon />, path: '/admin' }] : []),
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
@@ -100,9 +106,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               duration: theme.transitions.duration.enteringScreen,
             }),
           }),
-          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-          backgroundColor: 'white',
-          color: 'text.primary'
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          backgroundColor: 'background.paper',
+          color: 'text.primary',
+          borderRadius: 0
         }}
       >
         <Toolbar>
@@ -128,9 +135,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <AdminIcon />
                 </IconButton>
               </Tooltip>
-            )}
+            )}            <Tooltip title="Dark Mode Toggle">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={mode === 'dark'}
+                    onChange={toggleTheme}
+                    icon={<LightModeIcon />}
+                    checkedIcon={<DarkModeIcon />}
+                  />
+                }
+                label=""
+                sx={{ mr: 1 }}
+              />
+            </Tooltip>
             <Tooltip title="Alerts Center">
-              <IconButton color="inherit" sx={{ ml: 1 }}>
+              <IconButton color="inherit" sx={{ ml: 1 }} onClick={() => navigate('/alerts')}>
                 <NotificationsIcon />
               </IconButton>
             </Tooltip>
@@ -194,9 +214,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             width: drawerWidth, 
             boxSizing: 'border-box',
             ...(isMobile && !open && { display: 'none' }),
-            borderRight: '1px solid rgba(0, 0, 0, 0.05)',
-            boxShadow: 'none',
-            backgroundColor: '#FFFFFF',
+            boxShadow: '2px 0 8px rgba(0, 0, 0, 0.08)',
+            borderRadius: 0,
+            borderRight: 'none', // Remove default border if any
           },
         }}
       >

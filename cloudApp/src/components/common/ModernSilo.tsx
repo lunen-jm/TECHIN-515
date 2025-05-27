@@ -60,12 +60,11 @@ const ModernSilo: React.FC<ModernSiloProps> = ({
         p: 2,
         borderRadius: 2,
         background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        border: '1px solid #e0e0e0',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
         transition: 'transform 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-2px)',
-          boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
         }
       }}
     >
@@ -80,8 +79,10 @@ const ModernSilo: React.FC<ModernSiloProps> = ({
           width,
           height,
           position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
+          background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+          borderRadius: '50% 50% 20% 20% / 30% 30% 70% 70%',
+          boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.08)',
+          overflow: 'hidden',
         }}
       >
         {/* Support legs */}
@@ -191,31 +192,21 @@ const ModernSilo: React.FC<ModernSiloProps> = ({
             )}
           </Box>
           
-          {/* Level markers */}
-          {[25, 50, 75].map((level) => (
-            <Box
-              key={level}
-              sx={{
-                position: 'absolute',
-                bottom: `${level}%`,
-                left: 4,
-                right: 4,
-                height: '1px',
-                background: 'rgba(0,0,0,0.2)',
-                '&::after': {
-                  content: `"${level}%"`,
-                  position: 'absolute',
-                  right: -25,
-                  top: -6,
-                  fontSize: '8px',
-                  color: 'rgba(0,0,0,0.6)',
-                  background: 'rgba(255,255,255,0.8)',
-                  padding: '1px 3px',
-                  borderRadius: 2,
-                }
-              }}
-            />
-          ))}
+          {/* Modern level indicator line */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: `${100 - clampedPercentage}%`,
+              left: '10%',
+              right: '10%',
+              height: '2px',
+              background: `linear-gradient(90deg, transparent, ${fillColor}, transparent)`,
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+              borderRadius: '1px',
+              opacity: clampedPercentage > 5 ? 1 : 0,
+              transition: 'all 0.3s ease',
+            }}
+          />
         </Box>
       </Box>
       

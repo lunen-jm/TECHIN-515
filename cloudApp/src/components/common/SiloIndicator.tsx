@@ -37,17 +37,15 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
   
   if (variant === 'minimal') {
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" gap={1.5}>
-        <Box
+      <Box display="flex" flexDirection="column" alignItems="center" gap={1.5}>        <Box
           sx={{
             width: width * 0.9,
             height: height * 0.85,
             position: 'relative',
             background: '#FAFAFA',
             borderRadius: '8px 8px 4px 4px',
-            border: '1px solid #E5E7EB',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             overflow: 'hidden',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
           }}
         >
           {/* Fill */}
@@ -107,32 +105,26 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
             flexDirection: 'column',
           }}
         >
-          {/* Simplified top */}
-          <Box
+          {/* Simplified top */}            <Box
             sx={{
               width: '100%',
               height: 16,
               background: 'linear-gradient(135deg, #F3F4F6, #E5E7EB)',
               borderRadius: '12px 12px 0 0',
-              border: '1px solid #D1D5DB',
-              borderBottom: 'none',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
               position: 'relative',
               zIndex: 2,
             }}
           />
           
           {/* Main container */}
-          <Box
-            sx={{
-              width: '100%',
+          <Box            sx={{              width: '100%',
               height: height - 16,
-              background: '#FFFFFF',
-              border: '1px solid #D1D5DB',
-              borderTop: 'none',
+              background: 'background.paper',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               borderRadius: '0 0 8px 8px',
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
             }}
           >
             {/* Fill */}
@@ -195,15 +187,13 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
       )}
       
       <Box
-        sx={{
-          width,
+        sx={{          width,
           height,
           position: 'relative',
-          background: '#FFFFFF',
+          background: 'background.paper',
           borderRadius: '8px 8px 6px 6px',
-          border: '1px solid #E5E7EB',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           overflow: 'hidden',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}
       >
         {/* Fill */}

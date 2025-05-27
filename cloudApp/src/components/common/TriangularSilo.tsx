@@ -7,7 +7,7 @@ interface TriangularSiloProps {
   height?: number;
   width?: number;
   showPercentage?: boolean;
-  variant?: 'pointed' | 'curved' | 'steep' | 'gentle' | 'modern';
+  variant?: 'pointed' | 'curved' | 'steep' | 'gentle' | 'modern' | 'detailed' | 'minimal' | 'outlined';
 }
 
 const TriangularSilo: React.FC<TriangularSiloProps> = ({
@@ -89,10 +89,9 @@ const TriangularSilo: React.FC<TriangularSiloProps> = ({
               width: '100%',
               height: cylinderHeight,
               background: '#f5f5f5',
-              border: '2px solid #bdbdbd',
-              borderTop: 'none',
               position: 'relative',
               overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}
           >
             {/* Fill */}
@@ -156,10 +155,9 @@ const TriangularSilo: React.FC<TriangularSiloProps> = ({
               width: '100%',
               height: cylinderHeight,
               background: '#f5f5f5',
-              border: '2px solid #bdbdbd',
-              borderTop: 'none',
               position: 'relative',
               overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}
           >
             {/* Fill */}
@@ -222,10 +220,9 @@ const TriangularSilo: React.FC<TriangularSiloProps> = ({
               width: '100%',
               height: cylinderHeight,
               background: '#fafafa',
-              border: '1px solid #e0e0e0',
-              borderTop: 'none',
               position: 'relative',
               overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}
           >
             {/* Fill */}
@@ -289,10 +286,9 @@ const TriangularSilo: React.FC<TriangularSiloProps> = ({
               width: '100%',
               height: cylinderHeight,
               background: '#fafafa',
-              border: '1px solid #e0e0e0',
-              borderTop: 'none',
               position: 'relative',
               overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}
           >
             {/* Fill */}
@@ -356,11 +352,10 @@ const TriangularSilo: React.FC<TriangularSiloProps> = ({
               width: '100%',
               height: cylinderHeight,
               background: theme.palette.grey[50],
-              border: `1px solid ${theme.palette.grey[300]}`,
-              borderTop: 'none',
               position: 'relative',
               overflow: 'hidden',
               borderRadius: '0 0 4px 4px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}
           >
             {/* Fill */}
@@ -388,7 +383,267 @@ const TriangularSilo: React.FC<TriangularSiloProps> = ({
     );
   }
 
-  return null;
+  // Detailed variant - with drop shadows and more pronounced features
+  if (variant === 'detailed') {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+        {label && (
+          <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+            {label}
+          </Typography>
+        )}
+        
+        <Box
+          sx={{
+            width,
+            height,
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Triangular top */}
+          <Box
+            sx={{
+              width: '100%',
+              height: topHeight,
+              position: 'relative',
+              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+              background: '#9e9e9e',
+              boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          />
+          
+          {/* Main cylinder */}
+          <Box
+            sx={{
+              width: '100%',
+              height: cylinderHeight,
+              background: '#f5f5f5',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            }}
+          >
+            {/* Fill */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: fillHeight,
+                background: fillColor,
+                transition: 'height 0.4s ease-out',
+              }}
+            />
+          </Box>
+        </Box>
+        
+        {showPercentage && (
+          <Typography variant="caption" color={statusColor} fontSize="0.7rem" fontWeight={500}>
+            {Math.round(clampedPercentage)}%
+          </Typography>
+        )}
+      </Box>
+    );
+  }
+
+  // Minimal variant - simple and clean design
+  if (variant === 'minimal') {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" gap={0.5}>
+        {label && (
+          <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+            {label}
+          </Typography>
+        )}
+        
+        <Box
+          sx={{
+            width,
+            height,
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Triangular top */}
+          <Box
+            sx={{
+              width: '100%',
+              height: topHeight,
+              position: 'relative',
+              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+              background: '#e0e0e0',
+              boxShadow: '0 1px 4px rgba(0, 0, 0, 0.08)',
+            }}
+          />
+          
+          {/* Main cylinder */}
+          <Box
+            sx={{
+              width: '100%',
+              height: cylinderHeight,
+              background: '#f5f5f5',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            }}
+          >
+            {/* Fill */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: fillHeight,
+                background: fillColor,
+                transition: 'height 0.4s ease-out',
+              }}
+            />
+          </Box>
+        </Box>
+        
+        {showPercentage && (
+          <Typography variant="caption" color={statusColor} fontSize="0.7rem" fontWeight={500}>
+            {Math.round(clampedPercentage)}%
+          </Typography>
+        )}
+      </Box>
+    );
+  }
+
+  // Outlined variant - with only outlines and shadows
+  if (variant === 'outlined') {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" gap={0.5}>
+        {label && (
+          <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+            {label}
+          </Typography>
+        )}
+        
+        <Box
+          sx={{
+            width,
+            height,
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Triangular top */}
+          <Box
+            sx={{
+              width: '100%',
+              height: topHeight,
+              position: 'relative',
+              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+              background: 'transparent',
+              boxShadow: '0 1px 4px rgba(0, 0, 0, 0.08)',
+            }}
+          />
+          
+          {/* Main cylinder */}
+          <Box
+            sx={{
+              width: '100%',
+              height: cylinderHeight,
+              background: 'transparent',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            }}
+          >
+            {/* Fill */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: fillHeight,
+                background: fillColor,
+                transition: 'height 0.4s ease-out',
+              }}
+            />
+          </Box>
+        </Box>
+        
+        {showPercentage && (
+          <Typography variant="caption" color={statusColor} fontSize="0.7rem" fontWeight={500}>
+            {Math.round(clampedPercentage)}%
+          </Typography>
+        )}
+      </Box>
+    );
+  }
+
+  // Simple variant (default)
+  return (
+    <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+      {label && (
+        <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+          {label}
+        </Typography>
+      )}
+      
+      <Box
+        sx={{
+          width,
+          height,
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Triangular top */}
+        <Box
+          sx={{
+            width: '100%',
+            height: topHeight,
+            position: 'relative',
+            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+            background: `${theme.palette.grey[300]}`,
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.08)',
+          }}
+        />
+        
+        {/* Main cylinder */}
+        <Box
+          sx={{
+            width: '100%',
+            height: cylinderHeight,
+            background: theme.palette.grey[100],
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          {/* Fill */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: fillHeight,
+              background: fillColor,
+              transition: 'height 0.4s ease-out',
+            }}
+          />
+        </Box>
+      </Box>
+      
+      {showPercentage && (
+        <Typography variant="caption" color={statusColor} fontSize="0.7rem" fontWeight={500}>
+          {Math.round(clampedPercentage)}%
+        </Typography>
+      )}
+    </Box>
+  );
 };
 
 export default TriangularSilo;

@@ -48,17 +48,15 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
   const Layout1 = () => (
     <Grid container spacing={4}>
       {/* Large Grain Bin Card - 1/3 width */}
-      <Grid item xs={12} md={4}>
-        <Paper elevation={0} sx={{ 
+      <Grid item xs={12} md={4}>        <Paper elevation={0} sx={{ 
           p: 4, 
           borderRadius: 3,
-          background: '#FFFFFF',
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          background: 'background.paper',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           textAlign: 'center'
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
-            <Typography variant="h5" fontWeight={600} sx={{ color: '#111827' }}>
+            <Typography variant="h5" fontWeight={600} sx={{ color: 'text.primary' }}>
               {mockDevice.type}
             </Typography>
           </Box>
@@ -75,86 +73,75 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
           </Box>
 
           {/* Single prominent metric */}
-          <Box sx={{ bgcolor: '#F9FAFB', borderRadius: 3, p: 3, border: '1px solid #F3F4F6' }}>
-            <Typography variant="h2" fontWeight={700} color="#3B82F6" gutterBottom>
+          <Box sx={{ bgcolor: 'background.default', borderRadius: 3, p: 3, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
+            <Typography variant="h2" fontWeight={700} color="info.main" gutterBottom>
               {mockReadings.fillLevel}%
-            </Typography>
-            <Typography variant="body1" color="#6B7280" fontWeight={500}>
-              Fill Level
-            </Typography>
+            </Typography>                <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                  Fill Level
+                </Typography>
           </Box>
         </Paper>
-      </Grid>
-
-      {/* Compact Stats - 2/3 width */}
+      </Grid>      {/* Compact Stats - 2/3 width */}
       <Grid item xs={12} md={8}>
         <Paper elevation={0} sx={{ 
           p: 4, 
           borderRadius: 3, 
-          background: '#FFFFFF', 
-          border: '1px solid #E5E7EB', 
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-        }}>
-          <Typography variant="h5" fontWeight={600} gutterBottom color="#111827">
+          background: 'background.paper', 
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+        }}>          <Typography variant="h5" fontWeight={600} gutterBottom color="text.primary">
             Environmental Monitoring
           </Typography>
           
           <Grid container spacing={3} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
-              <Box sx={{ p: 3, bgcolor: '#FEF2F2', borderRadius: 3, border: '1px solid #FECACA' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <ThermostatIcon sx={{ color: '#EF4444', fontSize: 32, mr: 2 }} />
-                  <Typography variant="h6" fontWeight={600} color="#111827">
+              <Box sx={{ p: 3, bgcolor: 'error.light', borderRadius: 3, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <ThermostatIcon sx={{ color: 'error.main', fontSize: 32, mr: 2 }} />
+                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     Temperature
                   </Typography>
-                </Box>                <Typography variant="h3" fontWeight={700} color="#EF4444">
+                </Box><Typography variant="h3" fontWeight={700} color="error.main">
                   {mockReadings.temperature.toFixed(2)}°C
                 </Typography>
               </Box>
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <Box sx={{ p: 3, bgcolor: '#EFF6FF', borderRadius: 3, border: '1px solid #BFDBFE' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 32, mr: 2 }} />
-                  <Typography variant="h6" fontWeight={600} color="#111827">
+              <Box sx={{ p: 3, bgcolor: 'info.light', borderRadius: 3, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <WaterDropIcon sx={{ color: 'info.main', fontSize: 32, mr: 2 }} />
+                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     Humidity
                   </Typography>
-                </Box>                <Typography variant="h3" fontWeight={700} color="#3B82F6">
+                </Box><Typography variant="h3" fontWeight={700} color="info.main">
                   {mockReadings.humidity.toFixed(2)}%
                 </Typography>
               </Box>
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <Box sx={{ p: 3, bgcolor: '#F9FAFB', borderRadius: 3, border: '1px solid #E5E7EB' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Co2Icon sx={{ color: '#6B7280', fontSize: 32, mr: 2 }} />
-                  <Typography variant="h6" fontWeight={600} color="#111827">
+              <Box sx={{ p: 3, bgcolor: 'background.default', borderRadius: 3, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Co2Icon sx={{ color: 'text.secondary', fontSize: 32, mr: 2 }} />
+                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     CO₂ Level
                   </Typography>
                 </Box>
-                <Typography variant="h3" fontWeight={700} color="#6B7280">
+                <Typography variant="h3" fontWeight={700} color="text.secondary">
                   {mockReadings.co2}
-                </Typography>
-                <Typography variant="body2" color="#9CA3AF" fontWeight={500}>
+                </Typography><Typography variant="body2" color="text.secondary" fontWeight={500}>
                   ppm
                 </Typography>
               </Box>
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <Box sx={{ p: 3, bgcolor: '#F0FDF4', borderRadius: 3, border: '1px solid #BBF7D0' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <HeightIcon sx={{ color: '#10B981', fontSize: 32, mr: 2 }} />
-                  <Typography variant="h6" fontWeight={600} color="#111827">
+              <Box sx={{ p: 3, bgcolor: 'success.light', borderRadius: 3, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <HeightIcon sx={{ color: 'success.main', fontSize: 32, mr: 2 }} />
+                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     Distance
                   </Typography>
                 </Box>
-                <Typography variant="h3" fontWeight={700} color="#10B981">
+                <Typography variant="h3" fontWeight={700} color="success.main">
                   {mockReadings.lidarDistance}
-                </Typography>
-                <Typography variant="body2" color="#9CA3AF" fontWeight={500}>
+                </Typography><Typography variant="body2" color="text.secondary" fontWeight={500}>
                   cm
                 </Typography>
               </Box>
@@ -168,18 +155,14 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
   // Layout 2: Extra Large Bin (1/2) + Single Column Stats (1/2)
   const Layout2 = () => (
     <Grid container spacing={4}>
-      {/* Extra Large Grain Bin Card - 1/2 width */}
-      <Grid item xs={12} md={6}>
-        <Paper elevation={0} sx={{ 
+      {/* Extra Large Grain Bin Card - 1/2 width */}      <Grid item xs={12} md={6}>        <Paper elevation={0} sx={{ 
           p: 5, 
           borderRadius: 3,
-          background: '#FFFFFF',
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          background: 'background.paper',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           textAlign: 'center',
           height: 'fit-content'
-        }}>
-          <Typography variant="h4" fontWeight={700} sx={{ color: '#111827', mb: 4 }}>
+        }}><Typography variant="h4" fontWeight={700} sx={{ color: 'text.primary', mb: 4 }}>
             {mockDevice.type}
           </Typography>
 
@@ -196,21 +179,18 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
 
           {/* Large metrics */}
           <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Box sx={{ bgcolor: '#EFF6FF', borderRadius: 3, p: 3, border: '1px solid #BFDBFE' }}>
-                <Typography variant="h2" fontWeight={700} color="#3B82F6">
+            <Grid item xs={6}>              <Box sx={{ bgcolor: 'info.light', borderRadius: 3, p: 3, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
+                <Typography variant="h2" fontWeight={700} color="info.main">
                   {mockReadings.fillLevel}%
                 </Typography>
-                <Typography variant="body1" color="#6B7280" fontWeight={600}>
+                <Typography variant="body1" color="text.secondary" fontWeight={600}>
                   Fill Level
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={6}>
-              <Box sx={{ bgcolor: '#FEF2F2', borderRadius: 3, p: 3, border: '1px solid #FECACA' }}>                <Typography variant="h2" fontWeight={700} color="#EF4444">
+            <Grid item xs={6}>              <Box sx={{ bgcolor: 'error.light', borderRadius: 3, p: 3, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>                <Typography variant="h2" fontWeight={700} color="error.main">
                   {mockReadings.temperature.toFixed(2)}°C
-                </Typography>
-                <Typography variant="body1" color="#6B7280" fontWeight={600}>
+                </Typography><Typography variant="body1" color="text.secondary" fontWeight={600}>
                   Temp
                 </Typography>
               </Box>
@@ -219,87 +199,79 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
         </Paper>
       </Grid>
 
-      {/* Single Column Stats - 1/2 width */}
-      <Grid item xs={12} md={6}>
-        <Paper elevation={0} sx={{ 
+      {/* Single Column Stats - 1/2 width */}      <Grid item xs={12} md={6}>        <Paper elevation={0} sx={{ 
           p: 4, 
           borderRadius: 3, 
-          background: '#FFFFFF', 
-          border: '1px solid #E5E7EB', 
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-        }}>
-          <Typography variant="h5" fontWeight={600} gutterBottom color="#111827">
+          background: 'background.paper', 
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+        }}><Typography variant="h5" fontWeight={600} gutterBottom color="text.primary">
             Sensor Readings
           </Typography>
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-            {/* Temperature */}
-            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: '#FAFAFA', borderRadius: 2, border: '1px solid #F3F4F6' }}>
-              <ThermostatIcon sx={{ color: '#EF4444', fontSize: 40, mr: 3 }} />
+            {/* Temperature */}            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
+              <ThermostatIcon sx={{ color: 'error.main', fontSize: 40, mr: 3 }} />
               <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" fontWeight={600} color="#111827">
+                <Typography variant="h6" fontWeight={600} color="text.primary">
                   Temperature
                 </Typography>
-                <Typography variant="body2" color="#6B7280">                Internal bin temperature
+                <Typography variant="body2" color="text.secondary">                Internal bin temperature
               </Typography>
               </Box>
-              <Typography variant="h4" fontWeight={700} color="#EF4444">
+              <Typography variant="h4" fontWeight={700} color="error.main">
                 {mockReadings.temperature.toFixed(2)}°C
               </Typography>
             </Box>
 
-            {/* Humidity */}
-            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: '#FAFAFA', borderRadius: 2, border: '1px solid #F3F4F6' }}>
-              <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 40, mr: 3 }} />
+            {/* Humidity */}            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
+              <WaterDropIcon sx={{ color: 'info.main', fontSize: 40, mr: 3 }} />
               <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" fontWeight={600} color="#111827">
+                <Typography variant="h6" fontWeight={600} color="text.primary">
                   Humidity
                 </Typography>
-                <Typography variant="body2" color="#6B7280">                Relative humidity level
+                <Typography variant="body2" color="text.secondary">                Relative humidity level
               </Typography>
               </Box>
-              <Typography variant="h4" fontWeight={700} color="#3B82F6">
+              <Typography variant="h4" fontWeight={700} color="info.main">
                 {mockReadings.humidity.toFixed(2)}%
               </Typography>
             </Box>
 
-            {/* CO2 */}
-            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: '#FAFAFA', borderRadius: 2, border: '1px solid #F3F4F6' }}>
-              <Co2Icon sx={{ color: '#6B7280', fontSize: 40, mr: 3 }} />
+            {/* CO2 */}            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
+              <Co2Icon sx={{ color: 'text.secondary', fontSize: 40, mr: 3 }} />
               <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" fontWeight={600} color="#111827">
+                <Typography variant="h6" fontWeight={600} color="text.primary">
                   CO₂ Level
                 </Typography>
-                <Typography variant="body2" color="#6B7280">
+                <Typography variant="body2" color="text.secondary">
                   Carbon dioxide concentration
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="h4" fontWeight={700} color="#6B7280">
+                <Typography variant="h4" fontWeight={700} color="text.secondary">
                   {mockReadings.co2}
                 </Typography>
-                <Typography variant="body2" color="#9CA3AF">
+                <Typography variant="body2" color="text.secondary">
                   ppm
                 </Typography>
               </Box>
             </Box>
 
-            {/* Distance */}
-            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: '#FAFAFA', borderRadius: 2, border: '1px solid #F3F4F6' }}>
-              <HeightIcon sx={{ color: '#10B981', fontSize: 40, mr: 3 }} />
+            {/* Distance */}            <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
+              <HeightIcon sx={{ color: 'success.main', fontSize: 40, mr: 3 }} />
               <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" fontWeight={600} color="#111827">
+                <Typography variant="h6" fontWeight={600} color="text.primary">
                   Distance to Surface
                 </Typography>
-                <Typography variant="body2" color="#6B7280">
+                <Typography variant="body2" color="text.secondary">
                   LiDAR measurement
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="h4" fontWeight={700} color="#10B981">
+                <Typography variant="h4" fontWeight={700} color="success.main">
                   {mockReadings.lidarDistance}
                 </Typography>
-                <Typography variant="body2" color="#9CA3AF">
+                <Typography variant="body2" color="text.secondary">
                   cm
                 </Typography>
               </Box>
@@ -308,7 +280,7 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
 
           {/* Device Status */}
           <Divider sx={{ my: 3 }} />
-          <Typography variant="subtitle1" fontWeight={600} color="#111827" gutterBottom>
+          <Typography variant="subtitle1" fontWeight={600} color="text.primary" gutterBottom>
             Device Status
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -332,18 +304,16 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
   // Layout 3: Massive Bin Focus (40%) + Minimal Stats (60%)
   const Layout3 = () => (
     <Grid container spacing={4}>
-      {/* Massive Grain Bin Card - 40% width */}
-      <Grid item xs={12} md={5}>
+      {/* Massive Grain Bin Card - 40% width */}      <Grid item xs={12} md={5}>
         <Paper elevation={0} sx={{ 
           p: 6, 
           borderRadius: 3,
           background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
-          border: '1px solid #E2E8F0',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
           textAlign: 'center',
           height: 'fit-content'
         }}>
-          <Typography variant="h3" fontWeight={700} sx={{ color: '#1E293B', mb: 5 }}>
+          <Typography variant="h3" fontWeight={700} sx={{ color: 'text.primary', mb: 5 }}>
             {mockDevice.name}
           </Typography>
 
@@ -365,11 +335,10 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
             p: 4, 
             border: '2px solid rgba(59, 130, 246, 0.2)',
             backdropFilter: 'blur(10px)'
-          }}>
-            <Typography variant="h1" fontWeight={800} color="#3B82F6" sx={{ fontSize: '4rem' }}>
+          }}>            <Typography variant="h1" fontWeight={800} color="info.main" sx={{ fontSize: '4rem' }}>
               {mockReadings.fillLevel}%
             </Typography>
-            <Typography variant="h6" color="#475569" fontWeight={600} sx={{ mt: 1 }}>
+            <Typography variant="h6" color="text.secondary" fontWeight={600} sx={{ mt: 1 }}>
               Current Fill Level
             </Typography>
           </Box>
@@ -379,87 +348,77 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
       {/* Minimal Stats Grid - 60% width */}
       <Grid item xs={12} md={7}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={6}>
-              <Paper elevation={0} sx={{ 
+          <Grid container spacing={3}>            <Grid item xs={6}>              <Paper elevation={0} sx={{ 
                 p: 3, 
                 borderRadius: 3, 
-                background: '#FFFFFF', 
-                border: '1px solid #E5E7EB',
+                background: 'background.paper', 
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 textAlign: 'center'
               }}>
-                <ThermostatIcon sx={{ color: '#EF4444', fontSize: 48, mb: 2 }} />
-                <Typography variant="h4" fontWeight={700} color="#EF4444">
+                <ThermostatIcon sx={{ color: 'error.main', fontSize: 48, mb: 2 }} />
+                <Typography variant="h4" fontWeight={700} color="error.main">
                   {mockReadings.temperature}°C
                 </Typography>
-                <Typography variant="body1" color="#6B7280" fontWeight={500}>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
                   Temperature
                 </Typography>
               </Paper>
             </Grid>
-            
-            <Grid item xs={6}>
-              <Paper elevation={0} sx={{ 
+              <Grid item xs={6}>              <Paper elevation={0} sx={{ 
                 p: 3, 
                 borderRadius: 3, 
-                background: '#FFFFFF', 
-                border: '1px solid #E5E7EB',
+                background: 'background.paper', 
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 textAlign: 'center'
               }}>
-                <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 48, mb: 2 }} />                <Typography variant="h4" fontWeight={700} color="#3B82F6">
+                <WaterDropIcon sx={{ color: 'info.main', fontSize: 48, mb: 2 }} />                <Typography variant="h4" fontWeight={700} color="info.main">
                   {mockReadings.humidity.toFixed(2)}%
                 </Typography>
-                <Typography variant="body1" color="#6B7280" fontWeight={500}>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
                   Humidity
                 </Typography>
               </Paper>
             </Grid>
-            
-            <Grid item xs={6}>
-              <Paper elevation={0} sx={{ 
+              <Grid item xs={6}>              <Paper elevation={0} sx={{ 
                 p: 3, 
                 borderRadius: 3, 
-                background: '#FFFFFF', 
-                border: '1px solid #E5E7EB',
+                background: 'background.paper', 
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 textAlign: 'center'
               }}>
-                <Co2Icon sx={{ color: '#6B7280', fontSize: 48, mb: 2 }} />
-                <Typography variant="h4" fontWeight={700} color="#6B7280">
+                <Co2Icon sx={{ color: 'text.secondary', fontSize: 48, mb: 2 }} />
+                <Typography variant="h4" fontWeight={700} color="text.secondary">
                   {mockReadings.co2}
                 </Typography>
-                <Typography variant="body1" color="#6B7280" fontWeight={500}>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
                   CO₂ (ppm)
                 </Typography>
               </Paper>
             </Grid>
-            
-            <Grid item xs={6}>
-              <Paper elevation={0} sx={{ 
+              <Grid item xs={6}>              <Paper elevation={0} sx={{ 
                 p: 3, 
                 borderRadius: 3, 
-                background: '#FFFFFF', 
-                border: '1px solid #E5E7EB',
+                background: 'background.paper', 
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 textAlign: 'center'
               }}>
-                <HeightIcon sx={{ color: '#10B981', fontSize: 48, mb: 2 }} />
-                <Typography variant="h4" fontWeight={700} color="#10B981">
+                <HeightIcon sx={{ color: 'success.main', fontSize: 48, mb: 2 }} />
+                <Typography variant="h4" fontWeight={700} color="success.main">
                   {mockReadings.lidarDistance}
                 </Typography>
-                <Typography variant="body1" color="#6B7280" fontWeight={500}>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
                   Distance (cm)
                 </Typography>
               </Paper>
             </Grid>
           </Grid>
-          
-          {/* Device Status Card */}
-          <Paper elevation={0} sx={{ 
+            {/* Device Status Card */}          <Paper elevation={0} sx={{ 
             p: 3, 
             borderRadius: 3, 
-            background: '#F8FAFC', 
-            border: '1px solid #E2E8F0'
+            background: 'background.default', 
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
           }}>
-            <Typography variant="h6" fontWeight={600} color="#111827" gutterBottom>
+            <Typography variant="h6" fontWeight={600} color="text.primary" gutterBottom>
               Device Status
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -678,18 +637,15 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
   // Layout 3C: Massive Bin with Minimalist Cards
   const Layout3C = () => (
     <Grid container spacing={4}>
-      {/* Ultra Clean Massive Bin */}
-      <Grid item xs={12} md={5}>
-        <Paper elevation={0} sx={{ 
+      {/* Ultra Clean Massive Bin */}      <Grid item xs={12} md={5}>        <Paper elevation={0} sx={{ 
           p: 8, 
           borderRadius: 3,
-          background: '#FFFFFF',
-          border: '1px solid #F1F5F9',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          background: 'background.paper',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           textAlign: 'center',
           height: 'fit-content'
         }}>
-          <Typography variant="h2" fontWeight={300} sx={{ color: '#334155', mb: 6, letterSpacing: '-0.025em' }}>
+          <Typography variant="h2" fontWeight={300} sx={{ color: 'text.primary', mb: 6, letterSpacing: '-0.025em' }}>
             {mockDevice.name}
           </Typography>
 
@@ -701,13 +657,11 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
               width={200}
               showPercentage={false}
             />
-          </Box>
-
-          <Box sx={{ 
+          </Box>          <Box sx={{ 
             p: 6, 
             borderRadius: 2,
             background: '#F8FAFC',
-            border: '1px solid #E2E8F0'
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
           }}>
             <Typography variant="h1" fontWeight={100} color="#3B82F6" sx={{ fontSize: '5rem', letterSpacing: '-0.05em' }}>
               {mockReadings.fillLevel}
@@ -721,47 +675,43 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
 
       {/* Ultra Minimal Stats */}
       <Grid item xs={12} md={7}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {[
-            { icon: ThermostatIcon, value: mockReadings.temperature, unit: '°C', label: 'Temperature', color: '#EF4444' },
-            { icon: WaterDropIcon, value: mockReadings.humidity, unit: '%', label: 'Humidity', color: '#3B82F6' },
-            { icon: Co2Icon, value: mockReadings.co2, unit: 'ppm', label: 'Carbon Dioxide', color: '#10B981' },
-            { icon: HeightIcon, value: mockReadings.lidarDistance, unit: 'cm', label: 'Surface Distance', color: '#F59E0B' },
-          ].map((stat, index) => (
-            <Paper key={index} elevation={0} sx={{ 
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>          {[            { icon: ThermostatIcon, value: mockReadings.temperature, unit: '°C', label: 'Temperature', colorKey: 'error' },
+            { icon: WaterDropIcon, value: mockReadings.humidity, unit: '%', label: 'Humidity', colorKey: 'info' },
+            { icon: Co2Icon, value: mockReadings.co2, unit: 'ppm', label: 'Carbon Dioxide', colorKey: 'success' },
+            { icon: HeightIcon, value: mockReadings.lidarDistance, unit: 'cm', label: 'Surface Distance', colorKey: 'warning' },
+          ].map((stat, index) => (            <Paper key={index} elevation={0} sx={{ 
               p: 4, 
               borderRadius: 2, 
-              background: '#FFFFFF', 
-              border: '1px solid #F1F5F9',
+              background: 'background.paper', 
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               display: 'flex',
               alignItems: 'center',
               gap: 4,
               transition: 'all 0.2s ease',
               '&:hover': {
-                background: '#FAFBFC',
-                borderColor: '#E2E8F0'
+                background: 'background.default',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)'
               }
-            }}>
-              <Box sx={{ 
+            }}><Box sx={{ 
                 p: 2, 
                 borderRadius: '50%', 
-                background: `${stat.color}10`,
+                bgcolor: `${stat.colorKey}.light`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <stat.icon sx={{ color: stat.color, fontSize: 32 }} />
+                <stat.icon sx={{ color: `${stat.colorKey}.main`, fontSize: 32 }} />
               </Box>
               
               <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" color="#64748B" fontWeight={500} sx={{ mb: 0.5 }}>
+                <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 0.5 }}>
                   {stat.label}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  <Typography variant="h3" fontWeight={300} color="#1E293B">
+                  <Typography variant="h3" fontWeight={300} color="text.primary">
                     {stat.value}
                   </Typography>
-                  <Typography variant="h6" color="#64748B" fontWeight={400}>
+                  <Typography variant="h6" color="text.secondary" fontWeight={400}>
                     {stat.unit}
                   </Typography>
                 </Box>
@@ -817,7 +767,7 @@ const DeviceLayoutShowcase: React.FC = () => {  const [selectedLayout, setSelect
           </Select>
         </FormControl>
       </Box>      {/* Layout Descriptions */}
-      <Box sx={{ mb: 4, p: 3, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #F3F4F6' }}>
+      <Box sx={{ mb: 4, p: 3, bgcolor: 'background.default', borderRadius: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}>
         {selectedLayout === 'layout1' && (
           <Box>
             <Typography variant="h6" fontWeight={600} color="#111827" gutterBottom>

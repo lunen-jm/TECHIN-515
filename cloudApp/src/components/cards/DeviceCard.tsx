@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import SiloIndicator from '../common/SiloIndicator';
 import { getDeviceAlerts } from '../../firebase/services/alertService';
+import { useThemeMode } from '../../context/ThemeContext';
 
 interface DeviceProps {
   device: {
@@ -46,6 +47,7 @@ interface DeviceProps {
 const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
   const [hasActiveAlerts, setHasActiveAlerts] = useState(false);
   const [alertsLoading, setAlertsLoading] = useState(true);
+  const { mode } = useThemeMode();
 
   // Check for active alerts on component mount
   useEffect(() => {
@@ -65,13 +67,35 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
 
     checkAlerts();
   }, [device.id]);
-  
-  const getStatusLabel = (isActive: boolean) => {
+    const getStatusLabel = (isActive: boolean) => {
     return isActive ? 'Online' : 'Offline';
   };
+  // Get background color that matches border color in dark mode, white in light mode
+  const getBackgroundColor = (type: string, hasAlerts: boolean, isLoading: boolean) => {
+    // In light mode, always use paper background
+    if (mode === 'light') {
+      return 'background.paper';
+    }
 
-  // Always return white background as per design guidelines
-  const getBackgroundColor = () => '#FFFFFF';
+    // In dark mode, use subtle tinted backgrounds that match the border colors
+    if (isLoading) {
+      return 'rgba(224, 224, 224, 0.05)'; // Very subtle grey tint
+    }
+    
+    if (hasAlerts) {
+      return 'rgba(239, 68, 68, 0.08)'; // Subtle red tint for alerts
+    }
+    
+    if (!device.isActive) {
+      return 'rgba(239, 83, 80, 0.08)'; // Subtle red tint for offline
+    }
+    
+    if (device.lowBattery) {
+      return 'rgba(255, 193, 7, 0.08)'; // Subtle amber tint for low battery
+    }
+    
+    return 'rgba(76, 175, 80, 0.08)'; // Subtle green tint for good status
+  };
   const getBorderColor = (type: string, hasAlerts: boolean, isLoading: boolean) => {
     // Priority 1: If we're still loading alerts, show neutral color
     if (isLoading) {
@@ -95,33 +119,44 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
   // Priority 5: All good - use main green
     return '#4CAF50'; // Main green for good status
   };
-  
-  const getStatusTooltip = () => {
+    const getStatusTooltip = () => {
     if (alertsLoading) return 'Checking alert status...';
     if (hasActiveAlerts) return 'Device has active alerts';
     if (!device.isActive) return 'Device is offline';
     if (device.lowBattery) return 'Low battery warning';
     return 'Device status is good';
-  };// Calculate percentage for lidar fill level
+  };
+  // Calculate percentage for lidar fill level
   const lidarProgress = device.latestReadings?.lidar 
     ? Math.round((300 - device.latestReadings.lidar) / 3) // Convert to percentage (0-100%)
-    : 0;    return (
-    <Tooltip title={getStatusTooltip()} placement="top" arrow>
-      <Card 
-        elevation={1}
+    : 0;
+
+  return (
+    <Tooltip title={getStatusTooltip()} placement="top" arrow><Card 
+        elevation={0}
         sx={{ 
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          bgcolor: getBackgroundColor(),
-          transition: 'all 0.2s',
+          bgcolor: getBackgroundColor(device.type, hasActiveAlerts, alertsLoading),
+          borderRadius: 3, // Add rounded corners (12px)
+          transition: 'all 0.2s ease-in-out',
+          boxShadow: mode === 'light' 
+            ? '0 2px 8px rgba(0, 0, 0, 0.08)' 
+            : '0 2px 8px rgba(0, 0, 0, 0.3)',
+          border: mode === 'light' 
+            ? '1px solid #E0E0E0' 
+            : '1px solid #333333',
           '&:hover': {
             transform: 'translateY(-4px)',
-            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+            boxShadow: mode === 'light'
+              ? '0 8px 16px rgba(0, 0, 0, 0.12)'
+              : '0 8px 16px rgba(0, 0, 0, 0.4)'
           },
           borderLeft: `4px solid ${getBorderColor(device.type, hasActiveAlerts, alertsLoading)}`,
         }}
-      ><CardActionArea onClick={onClick} sx={{ flexGrow: 1 }}>
+      >
+        <CardActionArea onClick={onClick} sx={{ flexGrow: 1 }}>
         <CardContent sx={{ p: 3 }}>          {/* Header with name and status icons */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -135,31 +170,30 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
                     width: 8, 
                     height: 8, 
                     borderRadius: '50%', 
-                    bgcolor: '#EF4444',
+                    bgcolor: 'error.main',
                     animation: 'pulse 2s infinite' 
                   }} />
                 </Tooltip>
               )}
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {device.lowBattery ? (
-                <Tooltip title="Low Battery">
-                  <BatteryLowIcon sx={{ color: 'warning.main', mr: 1 }} />
-                </Tooltip>
-              ) : (
-                <Tooltip title="Battery Good">
-                  <BatteryGoodIcon sx={{ color: 'success.main', mr: 1 }} />
-                </Tooltip>
-              )}
-              {device.isActive ? (
-                <Tooltip title="Online">
-                  <SignalGoodIcon sx={{ color: 'success.main' }} />
-                </Tooltip>
-              ) : (
-                <Tooltip title="Offline">
-                  <SignalBadIcon sx={{ color: 'error.main' }} />
-                </Tooltip>
-              )}
+            </Box>            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Tooltip title={device.lowBattery ? "Low Battery" : "Battery Good"}>
+                <Box sx={{ mr: 1 }}>
+                  {device.lowBattery ? (
+                    <BatteryLowIcon sx={{ color: 'warning.main' }} />
+                  ) : (
+                    <BatteryGoodIcon sx={{ color: 'success.main' }} />
+                  )}
+                </Box>
+              </Tooltip>
+              <Tooltip title={device.isActive ? "Online" : "Offline"}>
+                <Box>
+                  {device.isActive ? (
+                    <SignalGoodIcon sx={{ color: 'success.main' }} />
+                  ) : (
+                    <SignalBadIcon sx={{ color: 'error.main' }} />
+                  )}
+                </Box>
+              </Tooltip>
             </Box>
           </Box>
           
@@ -168,14 +202,12 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
             <Chip 
               icon={<CheckIcon sx={{ fontSize: 16 }} />}
               label={device.type || 'Unknown Type'}
-              size="small"
-              sx={{ 
+              size="small"              sx={{ 
                 mr: 1, 
                 color: 'text.primary',
-                bgcolor: 'background.default',
+                bgcolor: 'background.paper',
                 fontWeight: 500,
-                border: '1px solid',
-                borderColor: 'divider' 
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
               }}
             />
             <Chip 
@@ -281,15 +313,14 @@ const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
               </Box>
             </Box>
           )}
-          
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
             <Typography variant="caption" color="text.secondary">
               ID: {device.id.substring(0, 8)}...
             </Typography>
             <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
               View Details →
             </Typography>
-          </Box>        </CardContent>
+          </Box></CardContent>
       </CardActionArea>
     </Card>
     </Tooltip>

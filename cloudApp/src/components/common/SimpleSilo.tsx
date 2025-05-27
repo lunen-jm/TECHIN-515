@@ -6,7 +6,7 @@ interface SimpleSiloProps {
   label?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   showPercentage?: boolean;
-  variant?: 'capsule' | 'square' | 'circle' | 'thin';
+  variant?: 'capsule' | 'square' | 'circle' | 'thin' | 'rounded' | 'rectangular';
   color?: 'primary' | 'success' | 'info' | 'warning' | 'auto';
 }
 
@@ -71,7 +71,7 @@ const SimpleSilo: React.FC<SimpleSiloProps> = ({
             backgroundColor: theme.palette.grey[100],
             borderRadius: width / 2,
             overflow: 'hidden',
-            border: `1px solid ${theme.palette.grey[200]}`,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           }}
         >
           <Box
@@ -124,9 +124,9 @@ const SimpleSilo: React.FC<SimpleSiloProps> = ({
             height: squareSize,
             position: 'relative',
             backgroundColor: theme.palette.grey[50],
-            border: `1px solid ${theme.palette.grey[200]}`,
             borderRadius: 1,
             overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           }}
         >
           <Box
@@ -178,9 +178,9 @@ const SimpleSilo: React.FC<SimpleSiloProps> = ({
             height: circleSize,
             position: 'relative',
             backgroundColor: theme.palette.grey[50],
-            border: `1px solid ${theme.palette.grey[200]}`,
             borderRadius: '50%',
             overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           }}
         >
           <Box
@@ -235,6 +235,7 @@ const SimpleSilo: React.FC<SimpleSiloProps> = ({
             backgroundColor: theme.palette.grey[100],
             borderRadius: thinWidth / 2,
             overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           }}
         >
           <Box
@@ -265,7 +266,149 @@ const SimpleSilo: React.FC<SimpleSiloProps> = ({
     );
   }
 
-  return null;
+  // Rounded variant - pill-shaped
+  if (variant === 'rounded') {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+        {label && (
+          <Typography variant="caption" color="text.secondary" fontSize="0.75rem" fontWeight={500}>
+            {label}
+          </Typography>
+        )}
+        
+        <Box
+          sx={{
+            width,
+            height,
+            position: 'relative',
+            backgroundColor: theme.palette.grey[100],
+            borderRadius: width / 2,
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: `${clampedPercentage}%`,
+              backgroundColor: fillColor,
+              borderRadius: width / 2,
+              transition: 'height 0.3s ease-out',
+            }}
+          />
+        </Box>
+        
+        {showPercentage && (
+          <Typography 
+            variant="caption" 
+            color="text.primary" 
+            fontSize={size === 'xs' ? '0.6rem' : '0.7rem'}
+            fontWeight={500}
+          >
+            {Math.round(clampedPercentage)}%
+          </Typography>
+        )}
+      </Box>
+    );
+  }
+
+  // Rectangular variant - rounded corners
+  if (variant === 'rectangular') {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+        {label && (
+          <Typography variant="caption" color="text.secondary" fontSize="0.75rem" fontWeight={500}>
+            {label}
+          </Typography>
+        )}
+        
+        <Box
+          sx={{
+            width,
+            height,
+            position: 'relative',
+            backgroundColor: theme.palette.grey[50],
+            borderRadius: '8px 8px 4px 4px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: `${clampedPercentage}%`,
+              backgroundColor: fillColor,
+              transition: 'height 0.3s ease-out',
+            }}
+          />
+        </Box>
+        
+        {showPercentage && (
+          <Typography 
+            variant="caption" 
+            color="text.primary" 
+            fontSize={size === 'xs' ? '0.6rem' : '0.7rem'}
+            fontWeight={500}
+          >
+            {Math.round(clampedPercentage)}%
+          </Typography>
+        )}
+      </Box>
+    );
+  }
+
+  // Clean variant (default)
+  return (
+    <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+      {label && (
+        <Typography variant="caption" color="text.secondary" fontSize="0.75rem" fontWeight={500}>
+          {label}
+        </Typography>
+      )}
+      
+      <Box
+        sx={{
+          width,
+          height,
+          position: 'relative',
+          backgroundColor: theme.palette.grey[100],
+          borderRadius: '12px 12px 6px 6px',
+          overflow: 'hidden',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: `${clampedPercentage}%`,
+            backgroundColor: fillColor,
+            borderRadius: '12px 12px 6px 6px',
+            transition: 'height 0.3s ease-out',
+          }}
+        />
+      </Box>
+      
+      {showPercentage && (
+        <Typography 
+          variant="caption" 
+          color="text.primary" 
+          fontSize={size === 'xs' ? '0.6rem' : '0.7rem'}
+          fontWeight={500}
+        >
+          {Math.round(clampedPercentage)}%
+        </Typography>
+      )}
+    </Box>
+  );
 };
 
 export default SimpleSilo;
