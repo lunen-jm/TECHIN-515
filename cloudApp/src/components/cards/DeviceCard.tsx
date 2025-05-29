@@ -3,10 +3,15 @@ import {
   Card, 
   CardContent, 
   CardActionArea, 
-  Typography, 
+  Typography,
   Box, 
   Chip,
-  Tooltip
+  Tooltip,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Checkbox
 } from '@mui/material';
 import { 
   Thermostat as ThermostatIcon,
@@ -18,11 +23,14 @@ import {
   Cloud as CloudIcon,
   SignalWifi4Bar as SignalGoodIcon,
   SignalWifiOff as SignalBadIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  MoreVert as MoreVertIcon,
+  Settings as SettingsIcon,
+  Delete as DeleteIcon,
+  Build as BuildIcon
 } from '@mui/icons-material';
 import SiloIndicator from '../common/SiloIndicator';
 import { getDeviceAlerts } from '../../firebase/services/alertService';
-import { useThemeMode } from '../../context/ThemeContext';
 
 interface DeviceProps {
   device: {
@@ -42,287 +50,331 @@ interface DeviceProps {
     };
   };
   onClick: () => void;
+  onSettingsClick?: (device: any) => void;
+  onDeleteClick?: (device: any) => void;
+  onDiagnosticsClick?: (device: any) => void;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelectionChange?: (deviceId: string, selected: boolean) => void;
 }
 
-const DeviceCard: React.FC<DeviceProps> = ({ device, onClick }) => {
+const DeviceCard: React.FC<DeviceProps> = ({ 
+  device, 
+  onClick, 
+  onSettingsClick,
+  onDeleteClick,
+  onDiagnosticsClick,
+  selectable = false,
+  selected = false,
+  onSelectionChange
+}) => {
   const [hasActiveAlerts, setHasActiveAlerts] = useState(false);
-  const [alertsLoading, setAlertsLoading] = useState(true);
-  const { mode } = useThemeMode();
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   // Check for active alerts on component mount
   useEffect(() => {
     const checkAlerts = async () => {
       try {
-        setAlertsLoading(true);
         const alerts = await getDeviceAlerts(device.id);
         const unresolvedAlerts = alerts.filter(alert => !alert.isResolved);
         setHasActiveAlerts(unresolvedAlerts.length > 0);
       } catch (error) {
         console.error('Error checking device alerts:', error);
         setHasActiveAlerts(false);
-      } finally {
-        setAlertsLoading(false);
       }
     };
 
     checkAlerts();
   }, [device.id]);
-    const getStatusLabel = (isActive: boolean) => {
-    return isActive ? 'Online' : 'Offline';
-  };
-  // Get background color that matches border color in dark mode, white in light mode
-  const getBackgroundColor = (type: string, hasAlerts: boolean, isLoading: boolean) => {
-    // In light mode, always use paper background
-    if (mode === 'light') {
-      return 'background.paper';
-    }
 
-    // In dark mode, use subtle tinted backgrounds that match the border colors
-    if (isLoading) {
-      return 'rgba(224, 224, 224, 0.05)'; // Very subtle grey tint
-    }
-    
-    if (hasAlerts) {
-      return 'rgba(239, 68, 68, 0.08)'; // Subtle red tint for alerts
-    }
-    
-    if (!device.isActive) {
-      return 'rgba(239, 83, 80, 0.08)'; // Subtle red tint for offline
-    }
-    
-    if (device.lowBattery) {
-      return 'rgba(255, 193, 7, 0.08)'; // Subtle amber tint for low battery
-    }
-    
-    return 'rgba(76, 175, 80, 0.08)'; // Subtle green tint for good status
+  // Menu handlers
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
   };
-  const getBorderColor = (type: string, hasAlerts: boolean, isLoading: boolean) => {
-    // Priority 1: If we're still loading alerts, show neutral color
-    if (isLoading) {
-      return '#E0E0E0'; // Grey while loading
-    }
-    
-    // Priority 2: If device has active alerts, show red (critical)
-    if (hasAlerts) {
-      return '#EF4444'; // Red for alerts
-    }
-      // Priority 3: If device is offline, show red (same as bad wifi signals)
-    if (!device.isActive) {
-      return '#EF5350'; // Red for offline (error.main)
-    }
-    
-    // Priority 4: If device has low battery, show amber (warning)
-    if (device.lowBattery) {
-      return '#FFC107'; // Amber for low battery
-    }
-    
-  // Priority 5: All good - use main green
-    return '#4CAF50'; // Main green for good status
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
   };
-    const getStatusTooltip = () => {
-    if (alertsLoading) return 'Checking alert status...';
-    if (hasActiveAlerts) return 'Device has active alerts';
-    if (!device.isActive) return 'Device is offline';
-    if (device.lowBattery) return 'Low battery warning';
-    return 'Device status is good';
+
+  const handleSettingsClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    handleMenuClose();
+    if (onSettingsClick) {
+      onSettingsClick(device);
+    }
   };
-  // Calculate percentage for lidar fill level
-  const lidarProgress = device.latestReadings?.lidar 
-    ? Math.round((300 - device.latestReadings.lidar) / 3) // Convert to percentage (0-100%)
-    : 0;
+
+  const handleDeleteClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    handleMenuClose();
+    if (onDeleteClick) {
+      onDeleteClick(device);
+    }
+  };
+
+  const handleDiagnosticsClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    handleMenuClose();
+    if (onDiagnosticsClick) {
+      onDiagnosticsClick(device);
+    }
+  };
+
+  // Selection handlers
+  const handleSelectionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+    if (onSelectionChange) {
+      onSelectionChange(device.id, event.target.checked);
+    }
+  };
+
+  const handleCardClick = () => {
+    if (!selectable) {
+      onClick();
+    }
+  };
+
+  const getStatusColor = () => {
+    if (!device.isActive) return '#f44336'; // Red for offline
+    if (device.lowBattery) return '#ff9800'; // Orange for low battery
+    return '#4caf50'; // Green for online
+  };
+
+  const getStatusText = () => {
+    if (!device.isActive) return 'Offline';
+    if (device.lowBattery) return 'Low Battery';
+    return 'Online';
+  };
+
+  const getStatusIcon = () => {
+    if (!device.isActive) return <SignalBadIcon sx={{ fontSize: 16 }} />;
+    return <SignalGoodIcon sx={{ fontSize: 16 }} />;
+  };
+
+  const formatValue = (value: number | undefined, suffix: string = '') => {
+    if (value === undefined || value === null) return 'N/A';
+    return `${value.toFixed(1)}${suffix}`;
+  };
+
+  // Convert lidar reading to fill percentage for silo indicator
+  const getLidarFillPercentage = (lidarReading: number) => {
+    // Assuming max depth is 300cm, convert to percentage (inverted because lower readings = higher fill)
+    const maxDepth = 300;
+    const minDepth = 10; // Minimum sensor reading
+    const clampedReading = Math.max(minDepth, Math.min(maxDepth, lidarReading));
+    return Math.round(((maxDepth - clampedReading) / (maxDepth - minDepth)) * 100);
+  };
 
   return (
-    <Tooltip title={getStatusTooltip()} placement="top" arrow><Card 
-        elevation={0}
+    <Tooltip 
+      title={hasActiveAlerts ? "This device has active alerts" : "Device status: " + getStatusText()}
+      placement="top"
+    >
+      <Card 
         sx={{ 
           height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          bgcolor: getBackgroundColor(device.type, hasActiveAlerts, alertsLoading),
-          borderRadius: 3, // Add rounded corners (12px)
+          position: 'relative',
+          border: hasActiveAlerts ? '2px solid #ff5722' : '1px solid',
+          borderColor: hasActiveAlerts ? '#ff5722' : 'divider',
+          boxShadow: hasActiveAlerts ? '0 4px 12px rgba(255, 87, 34, 0.2)' : 1,
+          cursor: selectable ? 'default' : 'pointer',
           transition: 'all 0.2s ease-in-out',
-          boxShadow: mode === 'light' 
-            ? '0 2px 8px rgba(0, 0, 0, 0.08)' 
-            : '0 2px 8px rgba(0, 0, 0, 0.3)',
-          border: mode === 'light' 
-            ? '1px solid #E0E0E0' 
-            : '1px solid #333333',
+          opacity: selected ? 0.8 : 1,
+          transform: selected ? 'scale(0.98)' : 'scale(1)',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: mode === 'light'
-              ? '0 8px 16px rgba(0, 0, 0, 0.12)'
-              : '0 8px 16px rgba(0, 0, 0, 0.4)'
-          },
-          borderLeft: `4px solid ${getBorderColor(device.type, hasActiveAlerts, alertsLoading)}`,
+            boxShadow: hasActiveAlerts ? '0 6px 16px rgba(255, 87, 34, 0.3)' : 3,
+            transform: selected ? 'scale(0.98)' : 'scale(1.02)'
+          }
         }}
       >
-        <CardActionArea onClick={onClick} sx={{ flexGrow: 1 }}>
-        <CardContent sx={{ p: 3 }}>          {/* Header with name and status icons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-                {device.name}
-              </Typography>
-              {hasActiveAlerts && !alertsLoading && (
-                <Tooltip title="Has active alerts">
-                  <Box sx={{ 
-                    ml: 1, 
-                    width: 8, 
-                    height: 8, 
-                    borderRadius: '50%', 
-                    bgcolor: 'error.main',
-                    animation: 'pulse 2s infinite' 
-                  }} />
-                </Tooltip>
-              )}
-            </Box>            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Tooltip title={device.lowBattery ? "Low Battery" : "Battery Good"}>
-                <Box sx={{ mr: 1 }}>
-                  {device.lowBattery ? (
-                    <BatteryLowIcon sx={{ color: 'warning.main' }} />
-                  ) : (
-                    <BatteryGoodIcon sx={{ color: 'success.main' }} />
-                  )}
-                </Box>
-              </Tooltip>
-              <Tooltip title={device.isActive ? "Online" : "Offline"}>
-                <Box>
-                  {device.isActive ? (
-                    <SignalGoodIcon sx={{ color: 'success.main' }} />
-                  ) : (
-                    <SignalBadIcon sx={{ color: 'error.main' }} />
-                  )}
-                </Box>
-              </Tooltip>
-            </Box>
-          </Box>
-          
-          {/* Status chips */}
-          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
-            <Chip 
-              icon={<CheckIcon sx={{ fontSize: 16 }} />}
-              label={device.type || 'Unknown Type'}
-              size="small"              sx={{ 
-                mr: 1, 
-                color: 'text.primary',
-                bgcolor: 'background.paper',
-                fontWeight: 500,
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
-              }}
-            />
-            <Chip 
-              label={getStatusLabel(device.isActive)}
-              size="small"
-              variant="filled"
-              sx={{ 
-                bgcolor: device.isActive ? 'success.main' : 'error.main', 
-                color: 'white',
-                fontWeight: 500 
-              }}
-            />
-          </Box>          {/* Sensor readings with bin indicator and stats */}
-          {device.latestReadings && (
-            <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
-              {/* Bin indicator for fill level */}
-              {device.latestReadings.lidar !== undefined && (
-                <Box sx={{ flex: '0 0 auto' }}>
-                  <SiloIndicator
-                    fillPercentage={lidarProgress}
-                    height={100}
-                    width={50}
-                    variant="minimal"
-                    showPercentage={false}
+        <CardActionArea 
+          onClick={handleCardClick}
+          sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+        >
+          <CardContent sx={{ flexGrow: 1, p: 2 }}>
+            {/* Header with selection checkbox and menu */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                {selectable && (
+                  <Checkbox
+                    checked={selected}
+                    onChange={handleSelectionChange}
+                    size="small"
+                    sx={{ p: 0, mr: 1 }}
                   />
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
-                    Fill Level
+                )}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="h6" noWrap sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                    {device.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {device.type}
                   </Typography>
                 </Box>
-              )}
+              </Box>
               
-              {/* Stats as values */}
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {device.latestReadings.temperature !== undefined && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <ThermostatIcon sx={{ fontSize: 18, color: 'error.main', mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        Temperature
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" fontWeight="600">
-                      {device.latestReadings.temperature.toFixed(2)}°C
-                    </Typography>
-                  </Box>
-                )}
-                
-                {device.latestReadings.humidity !== undefined && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <WaterDropIcon sx={{ fontSize: 18, color: 'info.main', mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        Humidity
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" fontWeight="600">
-                      {device.latestReadings.humidity.toFixed(2)}%
-                    </Typography>
-                  </Box>
-                )}
-                
-                {device.latestReadings.co2 !== undefined && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Co2Icon sx={{ fontSize: 18, color: 'text.secondary', mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        CO₂
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" fontWeight="600">
-                      {device.latestReadings.co2.toFixed(2)} ppm
-                    </Typography>
-                  </Box>
-                )}
-                
-                {device.latestReadings.outdoorTemp !== undefined && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CloudIcon sx={{ fontSize: 18, color: 'primary.main', mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        Outdoor Temp
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" fontWeight="600">
-                      {device.latestReadings.outdoorTemp.toFixed(2)}°C
-                    </Typography>
-                  </Box>
-                )}
-                
-                {device.latestReadings.lidar !== undefined && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <HeightIcon sx={{ fontSize: 18, color: 'success.main', mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        Distance
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" fontWeight="600">
-                      {device.latestReadings.lidar.toFixed(2)} cm
-                    </Typography>
-                  </Box>
-                )}
+              {/* Menu and status */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Chip
+                  icon={getStatusIcon()}
+                  label={getStatusText()}
+                  size="small"
+                  sx={{
+                    bgcolor: getStatusColor(),
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    height: 24
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={handleMenuOpen}
+                  sx={{ ml: 0.5 }}
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
               </Box>
             </Box>
-          )}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="caption" color="text.secondary">
-              ID: {device.id.substring(0, 8)}...
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
-              View Details →
-            </Typography>
-          </Box></CardContent>
-      </CardActionArea>
-    </Card>
+
+            {/* Device type indicator */}
+            <Box sx={{ mb: 2 }}>
+              <Chip
+                icon={<CloudIcon />}
+                label={device.type}
+                variant="outlined"
+                size="small"
+                sx={{ fontSize: '0.75rem' }}
+              />
+            </Box>
+
+            {/* Battery indicator */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              {device.lowBattery ? (
+                <BatteryLowIcon sx={{ color: '#ff9800', mr: 1, fontSize: 20 }} />
+              ) : (
+                <BatteryGoodIcon sx={{ color: '#4caf50', mr: 1, fontSize: 20 }} />
+              )}
+              <Typography variant="body2" color="text.secondary">
+                {device.lowBattery ? 'Low Battery' : 'Battery OK'}
+              </Typography>
+            </Box>            {/* Silo indicator - always show for grain storage devices */}
+            {device.latestReadings?.lidar !== undefined ? (
+              <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                <SiloIndicator 
+                  fillPercentage={getLidarFillPercentage(device.latestReadings.lidar)}
+                  label="Fill Level"
+                  variant="basic"
+                />
+              </Box>
+            ) : null}
+
+            {/* Main sensor readings - always show if available */}
+            {device.latestReadings ? (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                  Sensor Readings
+                </Typography>                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
+                  {device.latestReadings.temperature !== undefined && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <ThermostatIcon sx={{ fontSize: 20, mr: 0.8, color: '#2196f3' }} />
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formatValue(device.latestReadings.temperature, '°C')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {device.latestReadings.humidity !== undefined && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <WaterDropIcon sx={{ fontSize: 20, mr: 0.8, color: '#03a9f4' }} />
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formatValue(device.latestReadings.humidity, '%')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {device.latestReadings.co2 !== undefined && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Co2Icon sx={{ fontSize: 20, mr: 0.8, color: '#607d8b' }} />
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formatValue(device.latestReadings.co2, ' ppm')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {device.latestReadings.lidar !== undefined && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <HeightIcon sx={{ fontSize: 20, mr: 0.8, color: '#795548' }} />
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formatValue(device.latestReadings.lidar, ' cm')}
+                      </Typography>
+                    </Box>
+                  )}</Box>
+              </Box>
+            ) : (
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                minHeight: 60,
+                color: 'text.secondary'
+              }}>
+                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                  No recent readings
+                </Typography>
+              </Box>
+            )}
+
+            {/* Alert indicator */}
+            {hasActiveAlerts && (
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                mt: 1,
+                p: 1,
+                bgcolor: 'error.light',
+                borderRadius: 1
+              }}>
+                <CheckIcon sx={{ fontSize: 16, mr: 0.5, color: 'error.main' }} />
+                <Typography variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
+                  Active Alerts
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </CardActionArea>
+
+        {/* Menu */}
+        <Menu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem onClick={handleSettingsClick}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            Settings
+          </MenuItem>
+          <MenuItem onClick={handleDiagnosticsClick}>
+            <ListItemIcon>
+              <BuildIcon fontSize="small" />
+            </ListItemIcon>
+            Diagnostics
+          </MenuItem>
+          <MenuItem onClick={handleDeleteClick}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            Delete
+          </MenuItem>
+        </Menu>
+      </Card>
     </Tooltip>
   );
 };

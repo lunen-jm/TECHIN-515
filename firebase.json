@@ -1,9 +1,6 @@
 {
   "functions": {
-    "source": "firebase/functions",
-    "predeploy": [
-      "npm --prefix firebase/functions run build"
-    ]
+    "source": "firebase/functions"
   },
   "firestore": {
     "rules": "firebase/firestore.rules",

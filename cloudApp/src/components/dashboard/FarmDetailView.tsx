@@ -231,11 +231,10 @@ const FarmDetailView: React.FC = () => {
               >
                 Farm Settings
               </Button>
-            )}
-            <Button 
+            )}            <Button 
               variant="contained" 
               startIcon={<AddCircleIcon />}
-              onClick={() => navigate(`/devices/create?farmId=${farmId}`)}
+              onClick={() => navigate(`/devices/add?farmId=${farmId}`)}
             >
               Add Device
             </Button>
@@ -264,11 +263,10 @@ const FarmDetailView: React.FC = () => {
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
             This farm doesn't have any devices yet. Add your first device to start monitoring.
-          </Typography>
-          <Button 
+          </Typography>          <Button 
             variant="contained" 
             startIcon={<AddCircleIcon />}
-            onClick={() => navigate(`/devices/create?farmId=${farmId}`)}
+            onClick={() => navigate(`/devices/add?farmId=${farmId}`)}
             sx={{ px: 3, py: 1 }}
           >
             Add Your First Device

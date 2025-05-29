@@ -1,8 +1,8 @@
 import { db, functions } from '../config';
 import { 
   collection, doc, /* setDoc, */ getDoc, 
-  getDocs, query, where, updateDoc, /* deleteDoc, */
-  orderBy, limit, Timestamp 
+  getDocs, query, where, updateDoc, deleteDoc,
+  orderBy, limit, Timestamp, onSnapshot
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 
@@ -196,5 +196,284 @@ export const getDevice = async (deviceId: string): Promise<any> => {
   } catch (error) {
     console.error('Error getting device:', error);
     throw new Error('Failed to get device');
+  }
+};
+
+/**
+ * Real-time device status listener
+ * Returns an unsubscribe function to stop listening
+ */
+export const subscribeToDeviceStatus = (
+  deviceId: string, 
+  callback: (device: any) => void
+): (() => void) => {
+  const deviceRef = doc(db, 'devices', deviceId);
+  
+  return onSnapshot(deviceRef, (doc) => {
+    if (doc.exists()) {
+      const data = doc.data();
+      const device = {
+        id: doc.id,
+        name: data.name,
+        type: data.type || data.binType || 'Unknown',
+        isActive: data.isActive || data.is_active || false,
+        lowBattery: data.lowBattery || data.low_battery || false,
+        registeredFarm: data.registeredFarm || data.registered_farm || '',
+        createdAt: data.createdAt || data.created_at || new Date(),
+        userId: data.userId || data.user_id || '',
+        lastSeen: data.lastSeen || data.last_seen || null
+      };
+      callback(device);
+    }
+  }, (error) => {
+    console.error('Error listening to device status:', error);
+  });
+};
+
+/**
+ * Real-time listener for all devices in a farm
+ */
+export const subscribeToFarmDevices = (
+  farmId: string,
+  callback: (devices: any[]) => void
+): (() => void) => {
+  const devicesQuery = query(
+    collection(db, 'devices'),
+    where('registered_farm', '==', farmId)
+  );
+  
+  return onSnapshot(devicesQuery, (snapshot) => {
+    const devices = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name,
+        type: data.type || data.binType || 'Unknown',
+        isActive: data.isActive || data.is_active || false,
+        lowBattery: data.lowBattery || data.low_battery || false,
+        registeredFarm: data.registeredFarm || data.registered_farm || '',
+        createdAt: data.createdAt || data.created_at || new Date(),
+        userId: data.userId || data.user_id || '',
+        lastSeen: data.lastSeen || data.last_seen || null
+      };
+    });
+    callback(devices);
+  }, (error) => {
+    console.error('Error listening to farm devices:', error);
+  });
+};
+
+/**
+ * Real-time listener for device count summary
+ */
+export const subscribeToDeviceStatusSummary = (
+  farmId: string | null,
+  callback: (summary: {total: number, online: number, offline: number, lowBattery: number}) => void
+): (() => void) => {
+  let devicesQuery;
+  
+  if (farmId) {
+    devicesQuery = query(
+      collection(db, 'devices'),
+      where('registered_farm', '==', farmId)
+    );
+  } else {
+    devicesQuery = collection(db, 'devices');
+  }
+  
+  return onSnapshot(devicesQuery, (snapshot) => {
+    const devices = snapshot.docs.map(doc => doc.data()) as Device[];
+    
+    const summary = {
+      total: devices.length,
+      online: devices.filter(d => d.is_active).length,
+      offline: devices.filter(d => !d.is_active).length,
+      lowBattery: devices.filter(d => d.low_battery).length,
+    };
+    
+    callback(summary);
+  }, (error) => {
+    console.error('Error listening to device status summary:', error);
+  });
+};
+
+/**
+ * Update device configuration/settings
+ */
+export const updateDevice = async (deviceId: string, updates: Partial<any>): Promise<void> => {
+  try {
+    const deviceRef = doc(db, 'devices', deviceId);
+    await updateDoc(deviceRef, {
+      ...updates,
+      updatedAt: Timestamp.now()
+    });
+  } catch (error) {
+    console.error('Error updating device:', error);
+    throw new Error('Failed to update device');
+  }
+};
+
+/**
+ * Delete/deregister a device
+ */
+export const deleteDevice = async (deviceId: string): Promise<void> => {
+  try {
+    const deviceRef = doc(db, 'devices', deviceId);
+    await deleteDoc(deviceRef);
+  } catch (error) {
+    console.error('Error deleting device:', error);
+    throw new Error('Failed to delete device');
+  }
+};
+
+/**
+ * Update device settings specifically
+ */
+export const updateDeviceSettings = async (
+  deviceId: string, 
+  settings: {
+    readingInterval?: number;
+    transmissionInterval?: number;
+    sleepMode?: boolean;
+    alertThresholds?: {
+      temperature?: { min?: number; max?: number };
+      humidity?: { min?: number; max?: number };
+      co2?: { max?: number };
+      batteryLevel?: { min?: number };
+    };
+  }
+): Promise<void> => {
+  try {
+    const deviceRef = doc(db, 'devices', deviceId);
+    await updateDoc(deviceRef, {
+      settings: settings,
+      updatedAt: Timestamp.now()
+    });
+  } catch (error) {
+    console.error('Error updating device settings:', error);
+    throw new Error('Failed to update device settings');
+  }
+};
+
+/**
+ * Update device calibration values
+ */
+export const updateDeviceCalibration = async (
+  deviceId: string, 
+  calibration: {
+    temperature?: { offset?: number; scale?: number };
+    humidity?: { offset?: number; scale?: number };
+    co2?: { offset?: number; scale?: number };
+    lidar?: { offset?: number; scale?: number };
+  }
+): Promise<void> => {
+  try {
+    const deviceRef = doc(db, 'devices', deviceId);
+    await updateDoc(deviceRef, {
+      calibration: calibration,
+      updatedAt: Timestamp.now()
+    });
+  } catch (error) {
+    console.error('Error updating device calibration:', error);
+    throw new Error('Failed to update device calibration');
+  }
+};
+
+/**
+ * Bulk update multiple devices
+ */
+export const bulkUpdateDevices = async (
+  deviceIds: string[], 
+  updates: Partial<any>
+): Promise<void> => {
+  try {
+    const updatePromises = deviceIds.map(deviceId => 
+      updateDevice(deviceId, updates)
+    );
+    await Promise.all(updatePromises);
+  } catch (error) {
+    console.error('Error bulk updating devices:', error);
+    throw new Error('Failed to bulk update devices');
+  }
+};
+
+/**
+ * Bulk delete multiple devices
+ */
+export const bulkDeleteDevices = async (deviceIds: string[]): Promise<void> => {
+  try {
+    const deletePromises = deviceIds.map(deviceId => deleteDevice(deviceId));
+    await Promise.all(deletePromises);
+  } catch (error) {
+    console.error('Error bulk deleting devices:', error);
+    throw new Error('Failed to bulk delete devices');
+  }
+};
+
+/**
+ * Get device diagnostics and troubleshooting info
+ */
+export const getDeviceDiagnostics = async (deviceId: string): Promise<any> => {
+  try {
+    const device = await getDevice(deviceId);
+    if (!device) throw new Error('Device not found');
+
+    // Get recent sensor readings to check for data flow
+    const readingsQuery = query(
+      collection(db, 'readings'),
+      where('deviceId', '==', deviceId),
+      orderBy('timestamp', 'desc'),
+      limit(10)
+    );
+    const readingsSnapshot = await getDocs(readingsQuery);
+    const recentReadings = readingsSnapshot.docs.map(doc => doc.data());
+
+    // Calculate diagnostic metrics
+    const now = Date.now();
+    const lastReading = recentReadings[0];
+    const lastSeenTime = lastReading?.timestamp?.toMillis?.() || 0;
+    const timeSinceLastReading = now - lastSeenTime;
+
+    const diagnostics = {
+      device,
+      connectivity: {
+        isOnline: device.isActive,
+        lastSeen: device.lastSeen || lastReading?.timestamp,
+        timeSinceLastReading: timeSinceLastReading,
+        connectionStatus: timeSinceLastReading < 600000 ? 'Good' : // 10 minutes
+                          timeSinceLastReading < 3600000 ? 'Fair' : // 1 hour
+                          'Poor'
+      },
+      dataFlow: {
+        recentReadingsCount: recentReadings.length,
+        dataQuality: recentReadings.length > 5 ? 'Good' : 
+                    recentReadings.length > 2 ? 'Fair' : 'Poor',
+        hasTemperature: recentReadings.some(r => r.temperature !== undefined),
+        hasHumidity: recentReadings.some(r => r.humidity !== undefined),
+        hasCO2: recentReadings.some(r => r.co2 !== undefined),
+        hasLidar: recentReadings.some(r => r.lidar !== undefined)
+      },
+      hardware: {
+        batteryLevel: device.batteryLevel || 'Unknown',
+        batteryStatus: device.lowBattery ? 'Low' : 'Good',
+        firmwareVersion: device.firmwareVersion || 'Unknown'      },
+      recommendations: [] as string[]
+    };
+
+    // Generate recommendations
+    if (diagnostics.connectivity.connectionStatus === 'Poor') {
+      diagnostics.recommendations.push('Check device power and WiFi connection');
+    }
+    if (diagnostics.hardware.batteryStatus === 'Low') {
+      diagnostics.recommendations.push('Replace or recharge device battery');
+    }
+    if (diagnostics.dataFlow.dataQuality === 'Poor') {
+      diagnostics.recommendations.push('Check sensor connections and calibration');
+    }
+
+    return diagnostics;
+  } catch (error) {
+    console.error('Error getting device diagnostics:', error);
+    throw new Error('Failed to get device diagnostics');
   }
 };

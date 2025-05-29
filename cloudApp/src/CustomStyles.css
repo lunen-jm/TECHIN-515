@@ -132,3 +132,57 @@ h1, h2, h3, h4, h5, h6, .MuiTypography-h1, .MuiTypography-h2,
 .device-card {
   transition: border-left 0.3s ease-in-out;
 }
+
+/* Enhanced device card animations */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* Device card enhancements */
+.device-card-modern {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.device-card-modern:hover {
+  transform: translateY(-4px);
+}
+
+/* Battery indicator styling */
+.battery-indicator {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Status chip enhancements */
+.status-chip-online {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+  border: 1px solid #4caf50;
+}
+
+.status-chip-offline {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 1px solid #f44336;
+}

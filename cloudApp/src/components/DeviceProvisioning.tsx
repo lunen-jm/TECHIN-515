@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -82,6 +83,9 @@ function TabPanel(props: TabPanelProps) {
 
 const DeviceProvisioning: React.FC = () => {
   const { currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const farmIdFromUrl = searchParams.get('farmId');
+  
   const [farms, setFarms] = useState<Farm[]>([]);
   const [selectedFarm, setSelectedFarm] = useState<string>('');
   const [deviceName, setDeviceName] = useState('');
@@ -92,20 +96,23 @@ const DeviceProvisioning: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const loadFarms = useCallback(async () => {
+  const [snackbarMessage, setSnackbarMessage] = useState('');  const loadFarms = useCallback(async () => {
     try {
       if (currentUser) {
         const farmsData = await getFarms(currentUser.uid);
         setFarms(farmsData);
-        if (farmsData.length > 0) {
+        
+        // Pre-select farm if farmId is provided in URL
+        if (farmIdFromUrl && farmsData.some(farm => farm.id === farmIdFromUrl)) {
+          setSelectedFarm(farmIdFromUrl);
+        } else if (farmsData.length > 0) {
           setSelectedFarm(farmsData[0].id);
         }
       }
     } catch (err) {
       setError('Failed to load farms');
     }
-  }, [currentUser]);
+  }, [currentUser, farmIdFromUrl]);
 
   useEffect(() => {
     loadFarms();

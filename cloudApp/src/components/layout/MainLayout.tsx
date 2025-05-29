@@ -121,8 +121,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             sx={{ mr: 2 }}
           >
             <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+          </IconButton>          <Typography 
+            variant="h6" 
+            noWrap 
+            component="div" 
+            onClick={() => navigate('/')}
+            sx={{ 
+              flexGrow: 1, 
+              fontWeight: 600,
+              cursor: 'pointer',
+              '&:hover': {
+                opacity: 0.8
+              }
+            }}
+          >
             Farm Sensor Dashboard
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>

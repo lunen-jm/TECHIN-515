@@ -8,8 +8,12 @@ const {
   deviceHeartbeat
 } = require('./deviceRegistration');
 
+// Import sensor data function
+const { sensorData } = require('./sensorData');
+
 // Export the functions
 exports.registerDevice = registerDevice;
 exports.generateRegistrationCode = generateRegistrationCode;
 exports.cleanupExpiredCodes = cleanupExpiredCodes;
 exports.deviceHeartbeat = deviceHeartbeat;
+exports.sensorData = sensorData;
