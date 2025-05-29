@@ -18,7 +18,6 @@ import {
   ListItemIcon,
   Chip,
   CircularProgress,
-  Divider,
   Switch,
   FormControlLabel,
   TextField

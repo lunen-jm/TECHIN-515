@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -138,10 +138,9 @@ const DeviceSettingsModal: React.FC<DeviceSettingsModalProps> = ({
       setTabValue(0);
       setError(null);
       setSuccess(null);
-    }
-  }, [open, device]);
+    }  }, [open, device]);
 
-  const loadDiagnostics = async () => {
+  const loadDiagnostics = useCallback(async () => {
     try {
       setLoadingDiagnostics(true);
       const diagnosticData = await getDeviceDiagnostics(device.id);
@@ -151,13 +150,13 @@ const DeviceSettingsModal: React.FC<DeviceSettingsModalProps> = ({
     } finally {
       setLoadingDiagnostics(false);
     }
-  };
+  }, [device.id]);
 
   useEffect(() => {
     if (open && tabValue === 3) { // Diagnostics tab
       loadDiagnostics();
     }
-  }, [open, tabValue, device.id]);
+  }, [open, tabValue, device.id, loadDiagnostics]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
