@@ -183,25 +183,46 @@ exports.registerDevice = functions.https.onRequest(async (req, res) => {
  * Cloud Function to generate registration codes
  * Called by the web app when users want to add new devices
  */
-exports.generateRegistrationCode = functions.https.onCall(async (data, context) => {
-  // Check if user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+exports.generateRegistrationCode = functions.https.onRequest(async (req, res) => {
+  // Enable CORS for web app requests
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).send();
+    return;
   }
 
-  const { farmId, deviceName, location } = data;
-  const userId = context.auth.uid;
-
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
   try {
+    // For onRequest functions, we need to verify the Firebase ID token manually
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'No authentication token provided' });
+      return;
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const userId = decodedToken.uid;
+
+    const { farmId, deviceName, location } = req.body;
+
     // Verify user has access to the farm
     const farmDoc = await db.collection('farms').doc(farmId).get();
     if (!farmDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Farm not found');
+      res.status(404).json({ error: 'Farm not found' });
+      return;
     }
 
     const farmData = farmDoc.data();
     if (!farmData.users || !farmData.users.includes(userId)) {
-      throw new functions.https.HttpsError('permission-denied', 'User does not have access to this farm');
+      res.status(403).json({ error: 'User does not have access to this farm' });
+      return;
     }
 
     // Generate a unique 8-character registration code
@@ -223,16 +244,16 @@ exports.generateRegistrationCode = functions.https.onCall(async (data, context) 
 
     console.log(`Registration code generated: ${registrationCode} for farm ${farmId}`);
 
-    return {
+    res.status(200).json({
       registrationCode: registrationCode,
       expiresAt: regCodeData.expires_at,
       deviceName: regCodeData.device_name,
       farmName: farmData.name
-    };
+    });
 
   } catch (error) {
     console.error('Error generating registration code:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to generate registration code');
+    res.status(500).json({ error: 'Failed to generate registration code', details: error.message });
   }
 });
 

@@ -1,10 +1,9 @@
-import { db, functions } from '../config';
+import { db, auth } from '../config';
 import { 
   collection, doc, /* setDoc, */ getDoc, 
   getDocs, query, where, updateDoc, deleteDoc,
   orderBy, limit, Timestamp, onSnapshot
 } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 
 // Types
 interface Device {
@@ -44,9 +43,31 @@ export const generateRegistrationCode = async (
   request: RegistrationCodeRequest
 ): Promise<RegistrationCodeResponse> => {
   try {
-    const generateCode = httpsCallable(functions, 'generateRegistrationCode');
-    const result = await generateCode(request);
-    return result.data as RegistrationCodeResponse;
+    // Get the current user's ID token for authentication
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+    
+    const idToken = await currentUser.getIdToken();
+    
+    // Make HTTP request to the Cloud Function
+    const response = await fetch('https://us-central1-grainguard-22f5a.cloudfunctions.net/generateRegistrationCode', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+      },
+      body: JSON.stringify(request),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    return result as RegistrationCodeResponse;
   } catch (error) {
     console.error('Error generating registration code:', error);
     throw new Error('Failed to generate registration code');
