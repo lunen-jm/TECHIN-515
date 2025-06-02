@@ -27,9 +27,8 @@ exports.registerDevice = functions.https.onRequest(async (req, res) => {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
-
   try {
-    const { deviceId, registrationCode, deviceType, capabilities } = req.body;
+    const { deviceId, registrationCode, deviceType, capabilities, sensorMode, macAddress } = req.body;
 
     // Validate required fields
     if (!deviceId || !registrationCode) {
@@ -39,7 +38,15 @@ exports.registerDevice = functions.https.onRequest(async (req, res) => {
       return;
     }
 
-    console.log(`Device registration attempt: ${deviceId} with code: ${registrationCode}`);
+    // Validate sensor mode if provided
+    if (sensorMode !== undefined && sensorMode !== 0 && sensorMode !== 1) {
+      res.status(400).json({ 
+        error: 'Invalid sensor mode. Must be 0 (BLE Receiver) or 1 (Direct Sensors)' 
+      });
+      return;
+    }
+
+    console.log(`Device registration attempt: ${deviceId} with code: ${registrationCode}, sensorMode: ${sensorMode}`);
 
     // Verify registration code exists and is valid
     const regCodeDoc = await db.collection('registrationCodes').doc(registrationCode).get();
@@ -111,19 +118,19 @@ exports.registerDevice = functions.https.onRequest(async (req, res) => {
       console.log(`User ${userId} does not have access to farm ${farmId}`);
       res.status(403).json({ error: 'User does not have access to farm' });
       return;
-    }
-
-    // Create device document
+    }    // Create device document
     const deviceData = {
       id: deviceId,
       name: regCodeData.deviceName || `Sensor ${deviceId.slice(-4)}`,
-      type: deviceType || 'farm_sensor',
+      type: deviceType || 'farm_sensor_display',
       farmId: farmId,
       location: regCodeData.location || {
         name: 'Unspecified Location',
         coordinates: null
       },
       capabilities: capabilities ? capabilities.split(',') : ['temperature', 'humidity'],
+      sensorMode: sensorMode !== undefined ? sensorMode : 0, // 0 = BLE Receiver, 1 = Direct Sensors
+      macAddress: macAddress || null,
       status: 'online',
       batteryLevel: 100,
       lastSeen: admin.firestore.Timestamp.now(),

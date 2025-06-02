@@ -1451,8 +1451,8 @@ bool connectToWiFi() {
   Serial.printf("🔧 SSID: %s\n", config.wifi_ssid);
   Serial.printf("🔧 Password: %s\n", strlen(config.wifi_password) > 0 ? "[HIDDEN]" : "[EMPTY]");
   
-  WiFi.mode(WIFI_STA);
-  Serial.println("📡 WiFi mode set to Station (STA)");
+  WiFi.mode(WIFI_AP_STA);
+  Serial.println("📡 WiFi mode set to AP+Station (WIFI_AP_STA) - keeping portal active");
   
   Serial.println("🔄 Starting WiFi connection...");
   WiFi.begin(config.wifi_ssid, config.wifi_password);
@@ -1473,10 +1473,10 @@ bool connectToWiFi() {
   }
   
   Serial.println(); // New line after dots
-  
-  if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED) {
     unsigned long connectTime = millis() - startTime;
     Serial.println("✅ WiFi connection successful!");
+    Serial.println("🌐 Access Point remains active for device registration");
     Serial.printf("   📡 IP Address: %s\n", WiFi.localIP().toString().c_str());
     Serial.printf("   📡 Gateway: %s\n", WiFi.gatewayIP().toString().c_str());
     Serial.printf("   📡 DNS: %s\n", WiFi.dnsIP().toString().c_str());

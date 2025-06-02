@@ -37,10 +37,16 @@ let appCheck: AppCheck | undefined;
 // Function to initialize App Check
 const initializeAppCheckSafely = () => {
   try {
+    // In development, disable App Check enforcement to prevent throttling
+    if (process.env.NODE_ENV === 'development') {
+      console.log('App Check skipped in development mode');
+      return;
+    }
+    
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider('6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC'),
-      // Optional: Pass isTokenAutoRefreshEnabled as true to enable auto refresh
-      isTokenAutoRefreshEnabled: true
+      // Disable auto refresh in development to prevent throttling
+      isTokenAutoRefreshEnabled: process.env.NODE_ENV === 'production'
     });
     console.log('Firebase App Check initialized successfully');
   } catch (error) {

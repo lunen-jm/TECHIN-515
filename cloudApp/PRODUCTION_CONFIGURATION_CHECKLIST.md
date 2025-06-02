@@ -12,7 +12,7 @@ Your Firebase project is properly set up for **`grainguard-22f5a`** which matche
 #### App Check (Required for Security)
 - **URL**: https://console.firebase.google.com/project/grainguard-22f5a/appcheck
 - **Provider**: reCAPTCHA Enterprise
-- **Site Key**: `6LdWfLMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC`
+- **Site Key**: `6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC`
 - **Enforcement**: Enable for Firestore, Functions, Auth
 
 #### Authentication
@@ -36,7 +36,7 @@ Your Firebase project is properly set up for **`grainguard-22f5a`** which matche
 
 #### reCAPTCHA Enterprise
 - **URL**: https://console.cloud.google.com/security/recaptcha
-- **Site Key**: `6LdWfLMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC`
+- **Site Key**: `6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC`
 - **Authorized Domains**:
   - `localhost`
   - `grainguard-22f5a.firebaseapp.com`

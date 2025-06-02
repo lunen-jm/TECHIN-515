@@ -335,9 +335,9 @@ void handleWiFiConfig() {
       Serial.printf("Attempting to connect to WiFi: %s\n", config.wifi_ssid);
       
       if (connectToWiFi()) {
-        saveConfig();
-        server.send(200, "text/plain", "WiFi connected successfully");
-        Serial.println("WiFi connected and saved");
+        // Don't save config or restart yet - wait for registration
+        server.send(200, "text/plain", "WiFi connected successfully. Please proceed to device registration.");
+        Serial.println("WiFi connected - portal remains active for registration");
       } else {
         server.send(400, "text/plain", "Failed to connect to WiFi");
         Serial.println("WiFi connection failed");
@@ -360,14 +360,16 @@ void handleDeviceRegistration() {
       Serial.printf("Attempting device registration with code: %s\n", config.registration_code);
       
       if (registerWithFirebase()) {
-        server.send(200, "text/plain", "Device registered successfully");
-        Serial.println("Device registered successfully");
+        // Save configuration only after successful registration
+        saveConfig();
+        server.send(200, "text/plain", "Device registered successfully! Setup complete. Device will restart in 3 seconds...");
+        Serial.println("Device registered successfully - saving config and restarting");
         
         // Restart device after successful registration
-        delay(2000);
+        delay(3000);
         ESP.restart();
       } else {
-        server.send(400, "text/plain", "Registration failed");
+        server.send(400, "text/plain", "Registration failed. Please check your registration code and try again.");
         Serial.println("Device registration failed");
       }
     } else {
@@ -404,7 +406,8 @@ void handleReset() {
 }
 
 bool connectToWiFi() {
-  WiFi.mode(WIFI_STA);
+  // Use dual mode to keep AP active while connecting to WiFi
+  WiFi.mode(WIFI_AP_STA);
   WiFi.begin(config.wifi_ssid, config.wifi_password);
   
   int attempts = 0;
@@ -418,10 +421,13 @@ bool connectToWiFi() {
     Serial.println();
     Serial.print("WiFi connected! IP address: ");
     Serial.println(WiFi.localIP());
+    Serial.println("Access Point remains active for registration");
     return true;
   } else {
     Serial.println();
     Serial.println("WiFi connection failed");
+    // Stay in AP mode for retry
+    WiFi.mode(WIFI_AP);
     return false;
   }
 }

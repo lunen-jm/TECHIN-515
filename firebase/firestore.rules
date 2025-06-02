@@ -10,16 +10,21 @@ service cloud.firestore {
     function getUserId() {
       return request.auth.uid;
     }
-    
-    function isOwner(resource) {
-      return resource.data.userId == getUserId();    }
-      function canAccessFarm(farmId) {
-      // Check legacy farm ownership first (direct ownership)
-      return get(/databases/$(database)/documents/farms/$(farmId)).data.userId == getUserId() || 
-             get(/databases/$(database)/documents/farms/$(farmId)).data.user_id == getUserId() ||
-             isAuthenticated();
+      function isOwner(resource) {
+      return resource.data.userId == getUserId();
     }
     
+    function canAccessFarm(farmId) {
+      // Check direct farm ownership (legacy fields)
+      let farm = get(/databases/$(database)/documents/farms/$(farmId));
+      let isDirectOwner = farm.data.userId == getUserId() || farm.data.user_id == getUserId();
+      
+      // Check if user is a member of this farm
+      let isMember = exists(/databases/$(database)/documents/farmMembers/$(getUserId() + '_' + farmId)) ||
+                     exists(/databases/$(database)/documents/farmMembers/$(farmId + '_' + getUserId()));
+      
+      return isDirectOwner || isMember;
+    }    
     function isValidDevice() {
       return request.auth != null && 
              request.auth.token.device_id != null;
@@ -27,12 +32,13 @@ service cloud.firestore {
     
     function getDeviceId() {
       return request.auth.token.device_id;
-    }    // Users collection
+    }
+    
+    // Users collection
     match /users/{userId} {
       allow read, write: if isAuthenticated() && userId == getUserId();
     }
-    
-    // Farm members collection (multi-user system)
+      // Farm members collection (multi-user system)
     match /farmMembers/{membershipId} {
       allow read: if isAuthenticated() && 
                  (resource.data.userId == getUserId() || 
@@ -41,7 +47,8 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && 
                            (resource.data.userId == getUserId() ||
                             canAccessFarm(resource.data.farmId));
-    }    // Farms collection
+    }
+      // Farms collection
     match /farms/{farmId} {
       // Users can read/write farms they have access to
       allow read, write: if isAuthenticated() && canAccessFarm(farmId);
@@ -49,7 +56,9 @@ service cloud.firestore {
       // Allow creation of new farms by authenticated users
       allow create: if isAuthenticated() && 
                    resource.data.user_id == getUserId();
-    }    // Devices collection
+    }
+    
+    // Devices collection
     match /devices/{deviceId} {
       // Users can read devices from their farms
       allow read: if isAuthenticated() && canAccessFarm(resource.data.farmId);
