@@ -12,7 +12,7 @@
 **This is the critical step that will fix your 400 error:**
 
 1. **Open**: https://console.cloud.google.com/security/recaptcha
-2. **Select project**: `grainguard-c8c98`
+2. **Select project**: `grainguard-22f5a`
 3. **Find your site**: Look for key `6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC`
 4. **Click the site key** to edit
 5. **Add these domains** to the "Domains" section:
@@ -24,13 +24,13 @@
 6. **Save the configuration**
 
 ### 2. 🔥 Firebase Console - Verify App Check
-1. **Open**: https://console.firebase.google.com/project/grainguard-c8c98/appcheck
+1. **Open**: https://console.firebase.google.com/project/grainguard-22f5a/appcheck
 2. **Check Web app configuration**:
    - Provider: reCAPTCHA Enterprise ✓
    - Site key: `6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC` ✓
 
 ### 3. 🔐 Firebase Console - Add Authorized Domain
-1. **Open**: https://console.firebase.google.com/project/grainguard-c8c98/authentication/settings
+1. **Open**: https://console.firebase.google.com/project/grainguard-22f5a/authentication/settings
 2. **Scroll to "Authorized domains"**
 3. **Add**: `grainguardgix.netlify.app` (if not already there)
 

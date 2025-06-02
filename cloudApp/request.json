@@ -1,7 +1,0 @@
-{
-  "event": {
-    "token": "REPLACE_WITH_ACTUAL_TOKEN_FROM_grecaptcha.enterprise.execute()",
-    "expectedAction": "firebase_app_check",
-    "siteKey": "6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC"
-  }
-}

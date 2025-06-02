@@ -12,11 +12,12 @@ service cloud.firestore {
     }
     
     function isOwner(resource) {
-      return resource.data.userId == getUserId();
-    }
-    
-    function canAccessFarm(farmId) {
-      return farmId in get(/databases/$(database)/documents/users/$(getUserId())).data.farms;
+      return resource.data.userId == getUserId();    }
+      function canAccessFarm(farmId) {
+      // Check legacy farm ownership first (direct ownership)
+      return get(/databases/$(database)/documents/farms/$(farmId)).data.userId == getUserId() || 
+             get(/databases/$(database)/documents/farms/$(farmId)).data.user_id == getUserId() ||
+             isAuthenticated();
     }
     
     function isValidDevice() {
@@ -26,22 +27,28 @@ service cloud.firestore {
     
     function getDeviceId() {
       return request.auth.token.device_id;
-    }
-
-    // Users collection
+    }    // Users collection
     match /users/{userId} {
       allow read, write: if isAuthenticated() && userId == getUserId();
     }
-
-    // Farms collection
+    
+    // Farm members collection (multi-user system)
+    match /farmMembers/{membershipId} {
+      allow read: if isAuthenticated() && 
+                 (resource.data.userId == getUserId() || 
+                  canAccessFarm(resource.data.farmId));
+      allow create: if isAuthenticated() && resource.data.userId == getUserId();
+      allow update, delete: if isAuthenticated() && 
+                           (resource.data.userId == getUserId() ||
+                            canAccessFarm(resource.data.farmId));
+    }    // Farms collection
     match /farms/{farmId} {
       // Users can read/write farms they have access to
       allow read, write: if isAuthenticated() && canAccessFarm(farmId);
       
       // Allow creation of new farms by authenticated users
       allow create: if isAuthenticated() && 
-                   resource.data.users is list &&
-                   getUserId() in resource.data.users;
+                   resource.data.user_id == getUserId();
     }    // Devices collection
     match /devices/{deviceId} {
       // Users can read devices from their farms

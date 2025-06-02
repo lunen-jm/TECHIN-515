@@ -8,7 +8,7 @@ You're getting a **400 Bad Request** error when Firebase App Check tries to exch
 ### 1. 🌐 Google Cloud Console - ReCAPTCHA Enterprise Configuration
 
 1. **Go to Google Cloud Console**: https://console.cloud.google.com/
-2. **Select your project**: `grainguard-c8c98`
+2. **Select your project**: `grainguard-22f5a`
 3. **Navigate to**: Security > reCAPTCHA Enterprise
 4. **Find your site key**: `6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC`
 5. **Click on the site key** to edit it
@@ -26,7 +26,7 @@ You're getting a **400 Bad Request** error when Firebase App Check tries to exch
 ### 2. 🔥 Firebase Console - App Check Configuration
 
 1. **Go to Firebase Console**: https://console.firebase.google.com/
-2. **Select project**: `grainguard-c8c98`
+2. **Select project**: `grainguard-22f5a`
 3. **Navigate to**: Build > App Check
 4. **Click on "Web apps"**
 5. **Verify/Add your app** with these settings:
@@ -45,7 +45,7 @@ You're getting a **400 Bad Request** error when Firebase App Check tries to exch
 5. **Verify these domains are listed**:
    ```
    localhost
-   grainguard-c8c98.firebaseapp.com
+   grainguard-22f5a.firebaseapp.com
    grainguardgix.netlify.app
    ```
 

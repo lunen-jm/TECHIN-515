@@ -45,7 +45,7 @@ async function testAppCheck() {
     }
     
     // Make a direct test request to Firebase App Check
-    const response = await fetch('https://firebaseappcheck.googleapis.com/v1/projects/grainguard-c8c98/apps/1:59349064432:web:24d4a6bd7cd95749da2b88:exchangeRecaptchaEnterpriseToken', {
+    const response = await fetch('https://firebaseappcheck.googleapis.com/v1/projects/grainguard-22f5a/apps/1:23433283193:web:e120d9b1ce4fa22e1f76a8:exchangeRecaptchaEnterpriseToken', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
