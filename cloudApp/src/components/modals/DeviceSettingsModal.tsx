@@ -17,7 +17,11 @@ import {
   Alert,
   CircularProgress,
   Chip,
-  IconButton
+  IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
@@ -33,6 +37,16 @@ import {
   updateDeviceCalibration,
   getDeviceDiagnostics 
 } from '../../firebase/services/deviceService';
+
+// Define available grain types
+const GRAIN_TYPES = [
+  'Wheat',
+  'Corn',
+  'Soybean',
+  'Rice',
+  'Barley',
+  'Oats'
+];
 
 interface DeviceSettingsModalProps {
   open: boolean;
@@ -280,15 +294,22 @@ const DeviceSettingsModal: React.FC<DeviceSettingsModalProps> = ({
                 onChange={(e) => setDeviceName(e.target.value)}
                 variant="outlined"
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Device Type"
-                value={deviceType}
-                onChange={(e) => setDeviceType(e.target.value)}
-                variant="outlined"
-              />
+            </Grid>            <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel id="device-type-label">Grain Type</InputLabel>
+                <Select
+                  labelId="device-type-label"
+                  value={deviceType}
+                  onChange={(e) => setDeviceType(e.target.value)}
+                  label="Grain Type"
+                >
+                  {GRAIN_TYPES.map((grainType) => (
+                    <MenuItem key={grainType} value={grainType}>
+                      {grainType}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               <Typography variant="body2" color="text.secondary">

@@ -42,9 +42,7 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
                    resource.data.users is list &&
                    getUserId() in resource.data.users;
-    }
-
-    // Devices collection
+    }    // Devices collection
     match /devices/{deviceId} {
       // Users can read devices from their farms
       allow read: if isAuthenticated() && canAccessFarm(resource.data.farmId);

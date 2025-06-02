@@ -20,11 +20,12 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
 }) => {
   // Clamp percentage between 0 and 100
   const clampedPercentage = Math.max(0, Math.min(100, fillPercentage));
-    // Get fill color based on percentage - minimal design
-  const getFillColor = (percentage: number) => {
-    if (percentage >= 80) return '#3B82F6'; // Blue-500
-    if (percentage >= 40) return '#6366F1'; // Indigo-500
-    return '#8B5CF6'; // Violet-500
+    // Define the 4 color zones for realistic silo appearance (bottom to top)
+  const siloColors = {
+    bottom: '#376452',     // Forest Green (0-25%)
+    second: '#428F2F',     // Leaf Green (25-50%) 
+    third: '#4CB610',      // Bright Green (50-75%)
+    top: '#50C800'         // Neon Green (75-100%)
   };
 
   const getStatusColor = (percentage: number) => {
@@ -32,51 +33,82 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
     if (percentage >= 75) return '#F59E0B'; // Amber-500
     return '#10B981'; // Emerald-500
   };
-  const fillColor = getFillColor(clampedPercentage);
-  const statusColor = getStatusColor(clampedPercentage);
   
-  if (variant === 'minimal') {
+  const statusColor = getStatusColor(clampedPercentage);
+
+  // Calculate which zones should be visible based on fill percentage
+  const getVisibleZones = (percentage: number) => {
+    return {
+      bottom: percentage > 0,
+      second: percentage > 25,
+      third: percentage > 50,
+      top: percentage > 75
+    };
+  };
+
+  const visibleZones = getVisibleZones(clampedPercentage);
+    if (variant === 'minimal') {
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" gap={1.5}>        <Box
+      <Box display="flex" flexDirection="column" alignItems="center" gap={1.5}>        
+        <Box
           sx={{
             width: width * 0.9,
             height: height * 0.85,
             position: 'relative',
             background: '#FAFAFA',
-            borderRadius: '8px 8px 4px 4px',
+            borderRadius: '12px 12px 4px 4px',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {/* Fill */}
+          {/* Four stacked rectangles representing grain levels */}
+          {/* Top zone (75-100%) - Bright Green with curved top */}
           <Box
             sx={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: `${clampedPercentage}%`,
-              background: fillColor,
-              borderRadius: '0 0 2px 2px',
-              transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              height: '25%',
+              background: visibleZones.top ? siloColors.top : 'transparent',
+              borderRadius: '12px 12px 0 0',
+              opacity: visibleZones.top ? 1 : 0.1,
+              transition: 'opacity 0.6s ease',
+              border: '1px solid rgba(0,0,0,0.05)',
             }}
           />
           
-          {/* Subtle level lines */}
-          {[25, 50, 75].map((level) => (
-            <Box
-              key={level}
-              sx={{
-                position: 'absolute',
-                bottom: `${level}%`,
-                left: '8px',
-                right: '8px',
-                height: '1px',
-                background: '#E5E7EB',
-                opacity: 0.4,
-              }}
-            />
-          ))}
+          {/* Third zone (50-75%) - Leaf Green */}
+          <Box
+            sx={{
+              height: '25%',
+              background: visibleZones.third ? siloColors.third : 'transparent',
+              opacity: visibleZones.third ? 1 : 0.1,
+              transition: 'opacity 0.6s ease',
+              border: '1px solid rgba(0,0,0,0.05)',
+            }}
+          />
+          
+          {/* Second zone (25-50%) - Forest Green */}
+          <Box
+            sx={{
+              height: '25%',
+              background: visibleZones.second ? siloColors.second : 'transparent',
+              opacity: visibleZones.second ? 1 : 0.1,
+              transition: 'opacity 0.6s ease',
+              border: '1px solid rgba(0,0,0,0.05)',
+            }}
+          />
+          
+          {/* Bottom zone (0-25%) - Dark Green */}
+          <Box
+            sx={{
+              height: '25%',
+              background: visibleZones.bottom ? siloColors.bottom : 'transparent',
+              borderRadius: '0 0 4px 4px',
+              opacity: visibleZones.bottom ? 1 : 0.1,
+              transition: 'opacity 0.6s ease',
+              border: '1px solid rgba(0,0,0,0.05)',
+            }}
+          />
         </Box>
         
         {showPercentage && (
@@ -86,8 +118,7 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
         )}
       </Box>
     );
-  }
-  if (variant === 'detailed') {
+  }  if (variant === 'detailed') {
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
         {label && (
@@ -105,7 +136,8 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
             flexDirection: 'column',
           }}
         >
-          {/* Simplified top */}            <Box
+          {/* Curved top for realistic silo appearance */}
+          <Box
             sx={{
               width: '100%',
               height: 16,
@@ -117,45 +149,67 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
             }}
           />
           
-          {/* Main container */}
-          <Box            sx={{              width: '100%',
+          {/* Main container with stacked zones */}
+          <Box
+            sx={{
+              width: '100%',
               height: height - 16,
               background: 'background.paper',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               borderRadius: '0 0 8px 8px',
               position: 'relative',
               overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
-            {/* Fill */}
+            {/* Four stacked rectangles representing grain levels */}
+            
+            {/* Top zone (75-100%) - Bright Green with curved top half */}
             <Box
               sx={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: (clampedPercentage / 100) * (height - 16),
-                background: `linear-gradient(180deg, ${fillColor}DD, ${fillColor})`,
-                transition: 'height 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                borderRadius: '0 0 6px 6px',
+                height: '25%',
+                background: visibleZones.top ? siloColors.top : 'transparent',
+                opacity: visibleZones.top ? 1 : 0.1,
+                transition: 'opacity 0.6s ease',
+                border: '1px solid rgba(0,0,0,0.05)',
+                borderRadius: '0 0 0 0', // No radius since it's connected to the curved top
               }}
             />
             
-            {/* Minimal level indicators */}
-            {[25, 50, 75].map((level) => (
-              <Box
-                key={level}
-                sx={{
-                  position: 'absolute',
-                  bottom: `${level}%`,
-                  left: '12px',
-                  right: '12px',
-                  height: '1px',
-                  background: '#E5E7EB',
-                  opacity: 0.6,
-                }}
-              />
-            ))}
+            {/* Third zone (50-75%) - Leaf Green */}
+            <Box
+              sx={{
+                height: '25%',
+                background: visibleZones.third ? siloColors.third : 'transparent',
+                opacity: visibleZones.third ? 1 : 0.1,
+                transition: 'opacity 0.6s ease',
+                border: '1px solid rgba(0,0,0,0.05)',
+              }}
+            />
+            
+            {/* Second zone (25-50%) - Forest Green */}
+            <Box
+              sx={{
+                height: '25%',
+                background: visibleZones.second ? siloColors.second : 'transparent',
+                opacity: visibleZones.second ? 1 : 0.1,
+                transition: 'opacity 0.6s ease',
+                border: '1px solid rgba(0,0,0,0.05)',
+              }}
+            />
+            
+            {/* Bottom zone (0-25%) - Dark Green */}
+            <Box
+              sx={{
+                height: '25%',
+                background: visibleZones.bottom ? siloColors.bottom : 'transparent',
+                borderRadius: '0 0 6px 6px',
+                opacity: visibleZones.bottom ? 1 : 0.1,
+                transition: 'opacity 0.6s ease',
+                border: '1px solid rgba(0,0,0,0.05)',
+              }}
+            />
           </Box>
         </Box>
         
@@ -176,8 +230,7 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
         )}
       </Box>
     );
-  }
-  // Basic variant (default) - Clean minimal design
+  }  // Basic variant (default) - Clean minimal design with stacked colors
   return (
     <Box display="flex" flexDirection="column" alignItems="center" gap={1.5}>
       {label && (
@@ -187,44 +240,65 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
       )}
       
       <Box
-        sx={{          width,
+        sx={{
+          width,
           height,
           position: 'relative',
           background: 'background.paper',
           borderRadius: '8px 8px 6px 6px',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {/* Fill */}
+        {/* Four stacked rectangles representing grain levels */}
+        
+        {/* Top zone (75-100%) - Bright Green with curved top */}
         <Box
           sx={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: `${clampedPercentage}%`,
-            background: `linear-gradient(180deg, ${fillColor}DD, ${fillColor})`,
-            borderRadius: '0 0 4px 4px',
-            transition: 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            height: '25%',
+            background: visibleZones.top ? siloColors.top : 'transparent',
+            borderRadius: '8px 8px 0 0',
+            opacity: visibleZones.top ? 1 : 0.1,
+            transition: 'opacity 0.5s ease',
+            border: '1px solid rgba(0,0,0,0.05)',
           }}
         />
         
-        {/* Subtle level lines */}
-        {[25, 50, 75].map((level) => (
-          <Box
-            key={level}
-            sx={{
-              position: 'absolute',
-              bottom: `${level}%`,
-              left: '8px',
-              right: '8px',
-              height: '1px',
-              background: '#E5E7EB',
-              opacity: 0.4,
-            }}
-          />
-        ))}
+        {/* Third zone (50-75%) - Leaf Green */}
+        <Box
+          sx={{
+            height: '25%',
+            background: visibleZones.third ? siloColors.third : 'transparent',
+            opacity: visibleZones.third ? 1 : 0.1,
+            transition: 'opacity 0.5s ease',
+            border: '1px solid rgba(0,0,0,0.05)',
+          }}
+        />
+        
+        {/* Second zone (25-50%) - Forest Green */}
+        <Box
+          sx={{
+            height: '25%',
+            background: visibleZones.second ? siloColors.second : 'transparent',
+            opacity: visibleZones.second ? 1 : 0.1,
+            transition: 'opacity 0.5s ease',
+            border: '1px solid rgba(0,0,0,0.05)',
+          }}
+        />
+        
+        {/* Bottom zone (0-25%) - Dark Green */}
+        <Box
+          sx={{
+            height: '25%',
+            background: visibleZones.bottom ? siloColors.bottom : 'transparent',
+            borderRadius: '0 0 4px 4px',
+            opacity: visibleZones.bottom ? 1 : 0.1,
+            transition: 'opacity 0.5s ease',
+            border: '1px solid rgba(0,0,0,0.05)',
+          }}
+        />
       </Box>
       
       {showPercentage && (

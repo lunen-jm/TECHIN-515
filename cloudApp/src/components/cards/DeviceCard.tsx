@@ -187,24 +187,37 @@ const DeviceCard: React.FC<DeviceProps> = ({
             transform: selected ? 'scale(0.98)' : 'scale(1.02)'
           }
         }}
-      >
-        <CardActionArea 
+      >        <CardActionArea 
           onClick={handleCardClick}
           sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
-        >
-          <CardContent sx={{ flexGrow: 1, p: 2 }}>
-            {/* Header with selection checkbox and menu */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+        >          <CardContent sx={{ flexGrow: 1, p: 2 }}>
+            {/* Three-column layout: Menu | Device Info | Silo */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              {/* Left column - Menu and selection */}
+              <Box sx={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+                {/* Menu button */}
+                <IconButton
+                  size="small"
+                  onClick={handleMenuOpen}
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+                
+                {/* Selection checkbox */}
                 {selectable && (
                   <Checkbox
                     checked={selected}
                     onChange={handleSelectionChange}
                     size="small"
-                    sx={{ p: 0, mr: 1 }}
+                    sx={{ p: 0 }}
                   />
                 )}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
+              </Box>
+
+              {/* Middle column - Device information */}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                {/* Device name and type */}
+                <Box sx={{ mb: 1 }}>
                   <Typography variant="h6" noWrap sx={{ fontWeight: 600, fontSize: '1rem' }}>
                     {device.name}
                   </Typography>
@@ -212,69 +225,70 @@ const DeviceCard: React.FC<DeviceProps> = ({
                     {device.type}
                   </Typography>
                 </Box>
-              </Box>
-              
-              {/* Menu and status */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Chip
-                  icon={getStatusIcon()}
-                  label={getStatusText()}
-                  size="small"
-                  sx={{
-                    bgcolor: getStatusColor(),
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    height: 24
-                  }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={handleMenuOpen}
-                  sx={{ ml: 0.5 }}
-                >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
 
-            {/* Device type indicator */}
-            <Box sx={{ mb: 2 }}>
-              <Chip
-                icon={<CloudIcon />}
-                label={device.type}
-                variant="outlined"
-                size="small"
-                sx={{ fontSize: '0.75rem' }}
-              />
-            </Box>
+                {/* Status and device type chips */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                  <Chip
+                    icon={getStatusIcon()}
+                    label={getStatusText()}
+                    size="small"
+                    sx={{
+                      bgcolor: getStatusColor(),
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      height: 24
+                    }}
+                  />
+                  <Chip
+                    icon={<CloudIcon />}
+                    label={device.type}
+                    variant="outlined"
+                    size="small"
+                    sx={{ fontSize: '0.7rem', height: 24 }}
+                  />
+                </Box>
 
-            {/* Battery indicator */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              {device.lowBattery ? (
-                <BatteryLowIcon sx={{ color: '#ff9800', mr: 1, fontSize: 20 }} />
+                {/* Battery indicator */}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {device.lowBattery ? (
+                    <BatteryLowIcon sx={{ color: '#ff9800', mr: 1, fontSize: 20 }} />
+                  ) : (
+                    <BatteryGoodIcon sx={{ color: '#4caf50', mr: 1, fontSize: 20 }} />
+                  )}
+                  <Typography variant="body2" color="text.secondary">
+                    {device.lowBattery ? 'Low Battery' : 'Battery OK'}
+                  </Typography>
+                </Box>
+              </Box>              {/* Right column - Silo indicator */}
+              {device.latestReadings?.lidar !== undefined ? (
+                <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', pr: 2 }}>
+                  <SiloIndicator 
+                    fillPercentage={getLidarFillPercentage(device.latestReadings.lidar)}
+                    label="Fill Level"
+                    variant="basic"
+                    height={160}
+                    width={80}
+                  />
+                </Box>
               ) : (
-                <BatteryGoodIcon sx={{ color: '#4caf50', mr: 1, fontSize: 20 }} />
+                <Box sx={{ flex: '0 0 auto', width: 80, pr: 2 }}>
+                  {/* Empty space placeholder when no silo */}
+                </Box>
               )}
-              <Typography variant="body2" color="text.secondary">
-                {device.lowBattery ? 'Low Battery' : 'Battery OK'}
-              </Typography>
-            </Box>            {/* Silo indicator - always show for grain storage devices */}
-            {device.latestReadings?.lidar !== undefined ? (
-              <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-                <SiloIndicator 
-                  fillPercentage={getLidarFillPercentage(device.latestReadings.lidar)}
-                  label="Fill Level"
-                  variant="basic"
-                />
-              </Box>
-            ) : null}
+            </Box>
 
-            {/* Main sensor readings - always show if available */}
+            {/* Sensor readings card-within-card */}
             {device.latestReadings ? (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+              <Box sx={{ 
+                p: 1.5,
+                bgcolor: '#F8F9FA',
+                borderRadius: 1,
+                border: '1px solid #E9ECEF'
+              }}>
+                <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: 'text.primary' }}>
                   Sensor Readings
-                </Typography>                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
                   {device.latestReadings.temperature !== undefined && (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <ThermostatIcon sx={{ fontSize: 20, mr: 0.8, color: '#2196f3' }} />
@@ -306,10 +320,15 @@ const DeviceCard: React.FC<DeviceProps> = ({
                         {formatValue(device.latestReadings.lidar, ' cm')}
                       </Typography>
                     </Box>
-                  )}</Box>
+                  )}
+                </Box>
               </Box>
             ) : (
               <Box sx={{ 
+                p: 1.5,
+                bgcolor: '#F8F9FA',
+                borderRadius: 1,
+                border: '1px solid #E9ECEF',
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
@@ -348,11 +367,11 @@ const DeviceCard: React.FC<DeviceProps> = ({
           onClose={handleMenuClose}
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'right',
+            horizontal: 'left',
           }}
           transformOrigin={{
             vertical: 'top',
-            horizontal: 'right',
+            horizontal: 'left',
           }}
         >
           <MenuItem onClick={handleSettingsClick}>

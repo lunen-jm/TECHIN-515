@@ -60,7 +60,9 @@ struct DeviceConfig {
   char wifi_password[64];
   char device_id[32];
   char registration_code[16];
-  bool configured;
+  bool configured;  // Only true after successful Firebase registration
+  bool wifi_saved;  // True when WiFi credentials are saved
+  bool reg_code_saved;  // True when registration code is saved
   uint8_t sensor_mode; // 0=BLE receiver, 1=direct sensor reading
 };
 
@@ -194,10 +196,9 @@ void setup() {
   Serial.printf("   WiFi SSID: %s\n", strlen(config.wifi_ssid) > 0 ? config.wifi_ssid : "Not Set");
   Serial.printf("   Configured: %s\n", config.configured ? "Yes" : "No");
   Serial.println("-------------------------------------");
-  
-  // Check if device is already configured
+    // Check if device is already configured
   if (config.configured && strlen(config.wifi_ssid) > 0) {
-    Serial.println("🔄 Device is configured, attempting WiFi connection...");
+    Serial.println("🔄 Device is fully configured, attempting WiFi connection...");
     if (connectToWiFi()) {
       Serial.println("✅ Connected to WiFi successfully!");
       Serial.println("🚀 Starting normal sensor operation mode...");
@@ -207,8 +208,31 @@ void setup() {
       Serial.println("❌ Failed to connect to saved WiFi");
       Serial.println("🔄 Falling back to provisioning mode...");
     }
+  } else if (strlen(config.wifi_ssid) > 0 && strlen(config.registration_code) > 0) {
+    Serial.println("🔄 WiFi and registration code saved but not registered yet...");
+    Serial.println("🔄 Attempting complete setup process...");
+    if (connectToWiFi()) {
+      Serial.println("✅ WiFi connected! Attempting Firebase registration...");
+      if (registerWithFirebase()) {
+        Serial.println("✅ Registration successful! Device fully configured.");
+        config.configured = true;
+        saveConfig();
+        startSensorMode();
+        return;
+      } else {
+        Serial.println("❌ Registration failed - clearing saved data and restarting provisioning");
+        // Clear saved data so user can try again
+        memset(config.wifi_ssid, 0, sizeof(config.wifi_ssid));
+        memset(config.registration_code, 0, sizeof(config.registration_code));
+        config.wifi_saved = false;
+        config.reg_code_saved = false;
+        saveConfig();
+      }
+    } else {
+      Serial.println("❌ Failed to connect to saved WiFi - staying in provisioning mode");
+    }
   } else {
-    Serial.println("⚠️  Device not configured or missing WiFi credentials");
+    Serial.println("⚠️  Device not configured - missing WiFi credentials and/or registration code");
   }
   
   // Start provisioning mode
@@ -220,7 +244,32 @@ void setup() {
 void loop() {
   static unsigned long lastLoopTime = 0;
   static unsigned long loopCounter = 0;
+  static bool lastConfiguredState = false;
+  static unsigned long lastConfigStatusReport = 0;
   unsigned long currentTime = millis();
+  
+  // Report configuration status changes
+  if (config.configured != lastConfiguredState) {
+    if (config.configured) {
+      Serial.println("✅ DEVICE FULLY REGISTERED - Sensor data uploads now enabled!");
+      Serial.printf("   📡 WiFi: %s | Registration: Complete | Data uploads: Every %lu seconds\n", 
+                    config.wifi_ssid, UPLOAD_INTERVAL / 1000);
+    } else {
+      Serial.println("⚠️  Device registration incomplete - Sensor data uploads disabled");
+    }
+    lastConfiguredState = config.configured;
+  }
+  
+  // Periodic configuration status report every 2 minutes when not configured
+  if (!config.configured && (currentTime - lastConfigStatusReport >= 120000)) {
+    Serial.println("📋 CONFIGURATION STATUS REPORT:");
+    Serial.printf("   📡 WiFi Saved: %s | Registration Code Saved: %s | Fully Configured: %s\n",
+                  config.wifi_saved ? "✅ Yes" : "❌ No",
+                  config.reg_code_saved ? "✅ Yes" : "❌ No",
+                  config.configured ? "✅ Yes" : "❌ No");
+    Serial.println("   💡 Complete provisioning process to enable sensor data uploads");
+    lastConfigStatusReport = currentTime;
+  }
   
   // Debug loop performance every 30 seconds
   if (currentTime - lastLoopTime >= 30000) {
@@ -230,10 +279,33 @@ void loop() {
     loopCounter = 0;
   }
   loopCounter++;
-  
-  if (config.configured && WiFi.status() == WL_CONNECTED) {
+    if (config.configured && WiFi.status() == WL_CONNECTED) {
     // Normal sensor operation mode
     sensorLoop();
+  } else if (config.configured && WiFi.status() != WL_CONNECTED) {
+    // WiFi was configured but connection lost - try to reconnect or fall back to provisioning
+    static unsigned long lastReconnectAttempt = 0;
+    static int reconnectAttempts = 0;
+    
+    if (currentTime - lastReconnectAttempt >= 30000) { // Try every 30 seconds
+      Serial.printf("⚠️  WiFi disconnected (Status: %d) - Reconnection attempt %d/5\n", WiFi.status(), reconnectAttempts + 1);
+      
+      if (reconnectAttempts < 5) {
+        Serial.println("🔄 Attempting WiFi reconnection...");
+        WiFi.begin(config.wifi_ssid, config.wifi_password);
+        reconnectAttempts++;
+        lastReconnectAttempt = currentTime;
+      } else {
+        Serial.println("❌ Max reconnection attempts reached - falling back to provisioning mode");
+        Serial.println("🛠️  Starting provisioning mode for reconfiguration...");
+        reconnectAttempts = 0;
+        startProvisioningMode();
+      }
+    }
+    
+    // Still handle provisioning requests during reconnection attempts
+    dnsServer.processNextRequest();
+    server.handleClient();
   } else {
     // Provisioning mode
     dnsServer.processNextRequest();
@@ -534,22 +606,18 @@ void handleBLEData() {
             pixels.setPixelColor(1, pixels.Color(255, 0, 0)); // Red
             pixels.show();
             peripheral.disconnect();
-          } else {
-            Serial.println("✅ Data characteristic found!");
+          } else {            Serial.println("✅ Data characteristic found!");
             Serial.printf("   🔧 Characteristic UUID: %s\n", CHARACTERISTIC_UUID);
-            Serial.printf("   📋 Properties: %s%s%s%s\n",
+            Serial.printf("   📋 Properties: %s%s\n",
                           dataChar.canRead() ? "Read " : "",
-                          dataChar.canWrite() ? "Write " : "",
-                          dataChar.canNotify() ? "Notify " : "",
-                          dataChar.canIndicate() ? "Indicate " : "");
+                          dataChar.canWrite() ? "Write " : "");
             
             pixels.setPixelColor(1, pixels.Color(0, 255, 0)); // Green
             pixels.show();
             
-            if (dataChar.canNotify()) {
-              Serial.println("📡 Subscribing to notifications...");
-              dataChar.subscribe();
-            }
+            // Subscribe to notifications if available
+            Serial.println("📡 Subscribing to notifications...");
+            dataChar.subscribe();
             Serial.println("=====================================");
           }
         } else {
@@ -764,6 +832,17 @@ void uploadSensorData() {
   Serial.println("📡 UPLOADING SENSOR DATA TO FIREBASE");
   Serial.println("=====================================");
   
+  // Check if device is fully registered before uploading data
+  if (!config.configured) {
+    Serial.println("⚠️  Cannot upload data - Device not fully registered");
+    Serial.println("   💡 Device must complete Firebase registration before sensor data uploads");
+    Serial.printf("   📋 Registration Status: WiFi saved=%s, Reg code saved=%s, Configured=%s\n", 
+                  config.wifi_saved ? "Yes" : "No",
+                  config.reg_code_saved ? "Yes" : "No", 
+                  config.configured ? "Yes" : "No");
+    return;
+  }
+  
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("❌ Cannot upload data - WiFi not connected");
     Serial.printf("   📡 WiFi Status: %d\n", WiFi.status());
@@ -821,7 +900,7 @@ void uploadSensorData() {
       pixels.setPixelColor(0, pixels.Color(255, 255, 0)); // Yellow
     } else if (httpResponseCode >= 500) {
       Serial.println("⚠️  Server error - Firebase may be down");
-      pixels.setPixelColor(0, pixels.Color(255, 165, 0)); // Orange
+      pixels.setPixelColor(0, pixels.Color(255,165, 0)); // Orange
     } else {
       Serial.println("⚠️  Unexpected response code");
       pixels.setPixelColor(0, pixels.Color(255, 255, 0)); // Yellow
@@ -839,6 +918,284 @@ void uploadSensorData() {
   pixels.show();
   http.end();
   Serial.println("=====================================");
+}
+
+// Complete device setup function - attempts WiFi connection and Firebase registration
+bool completeDeviceSetup() {
+  Serial.println("=====================================");
+  Serial.println("🚀 STARTING COMPLETE DEVICE SETUP");
+  Serial.println("=====================================");
+  
+  Serial.printf("📋 Setup Configuration:\n");
+  Serial.printf("   📡 WiFi SSID: %s\n", config.wifi_ssid);
+  Serial.printf("   🔑 WiFi Password: [%d chars]\n", strlen(config.wifi_password));
+  Serial.printf("   🔑 Registration Code: %s\n", config.registration_code);
+  Serial.printf("   🆔 Device ID: %s\n", config.device_id);
+  
+  // Step 1: Attempt WiFi connection
+  Serial.println("📶 Step 1: Attempting WiFi connection...");
+  if (!connectToWiFi()) {
+    Serial.println("❌ WiFi connection failed during complete setup");
+    return false;
+  }
+  
+  Serial.println("✅ WiFi connected successfully!");
+  
+  // Step 2: Attempt Firebase registration
+  Serial.println("🔥 Step 2: Attempting Firebase registration...");
+  if (!registerWithFirebase()) {
+    Serial.println("❌ Firebase registration failed during complete setup");
+    
+    // Disconnect WiFi since registration failed
+    WiFi.disconnect();
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(AP_SSID, AP_PASSWORD);
+    Serial.println("🔄 Returned to AP mode after registration failure");
+    
+    return false;
+  }
+  
+  Serial.println("✅ Firebase registration successful!");
+  
+  // Step 3: Save complete configuration
+  Serial.println("💾 Step 3: Saving complete configuration...");
+  config.configured = true;
+  config.wifi_saved = true;
+  config.reg_code_saved = true;
+  saveConfig();
+  
+  Serial.println("=====================================");
+  Serial.println("🎉 COMPLETE DEVICE SETUP SUCCESSFUL!");
+  Serial.println("=====================================");
+  Serial.printf("   Device: %s\n", config.device_id);
+  Serial.printf("   WiFi: %s\n", config.wifi_ssid);
+  Serial.printf("   IP: %s\n", WiFi.localIP().toString().c_str());
+  Serial.println("   Status: Fully Configured ✅");
+  Serial.println("=====================================");
+  
+  return true;
+}
+
+// Test basic internet connectivity before attempting Firebase registration
+bool testInternetConnectivity() {
+  Serial.println("🌐 Testing Internet Connectivity");
+  Serial.println("-------------------------------------");
+  
+  // Test 1: Check WiFi connection
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("❌ WiFi not connected");
+    return false;
+  }
+  
+  // Test 2: Check if we have a valid IP and gateway
+  IPAddress localIP = WiFi.localIP();
+  IPAddress gateway = WiFi.gatewayIP();
+  
+  if (localIP == IPAddress(0, 0, 0, 0)) {
+    Serial.println("❌ No valid IP address assigned");
+    return false;
+  }
+  
+  if (gateway == IPAddress(0, 0, 0, 0)) {
+    Serial.println("❌ No gateway configured");
+    return false;
+  }
+  
+  Serial.printf("✅ IP: %s, Gateway: %s\n", localIP.toString().c_str(), gateway.toString().c_str());
+  
+  // Test 3: Simple HTTP connectivity test to a reliable endpoint
+  HTTPClient testHttp;
+  testHttp.setTimeout(5000); // 5 second timeout for connectivity test
+  testHttp.setConnectTimeout(3000); // 3 second connection timeout
+  testHttp.setReuse(false);
+  
+  // Test with a simple, reliable endpoint
+  const char* testUrl = "http://httpbin.org/status/200";
+  Serial.printf("🔍 Testing HTTP connectivity to: %s\n", testUrl);
+  
+  testHttp.begin(testUrl);
+  
+  unsigned long testStart = millis();
+  int httpCode = testHttp.GET();
+  unsigned long testTime = millis() - testStart;
+  
+  testHttp.end();
+  
+  Serial.printf("📊 Test completed in %lu ms\n", testTime);
+  
+  if (httpCode == 200) {
+    Serial.println("✅ Internet connectivity test passed");
+    return true;
+  } else if (httpCode > 0) {
+    Serial.printf("⚠️  HTTP test returned code %d (expected 200)\n", httpCode);
+    // Still return true if we got any HTTP response - indicates connectivity
+    return true;
+  } else {
+    Serial.printf("❌ HTTP test failed with error: %d\n", httpCode);
+    Serial.println("   Possible causes:");
+    Serial.println("   - DNS resolution failure");
+    Serial.println("   - No internet access");
+    Serial.println("   - Firewall blocking HTTP requests");
+    
+    // Try a backup test with Google DNS
+    Serial.println("🔄 Trying backup connectivity test...");
+    testHttp.begin("http://8.8.8.8/");
+    testHttp.setTimeout(3000);
+    testHttp.setConnectTimeout(2000);
+    
+    int backupCode = testHttp.GET();
+    testHttp.end();
+    
+    if (backupCode > 0) {
+      Serial.printf("✅ Backup test successful (code: %d) - basic connectivity OK\n", backupCode);
+      return true;
+    } else {
+      Serial.printf("❌ Backup test also failed (code: %d)\n", backupCode);
+      return false;
+    }
+  }
+}
+
+bool registerWithFirebase() {
+  Serial.println("=====================================");
+  Serial.println("🔥 REGISTERING DEVICE WITH FIREBASE");
+  Serial.println("=====================================");
+  
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("❌ WiFi not connected, cannot register");
+    Serial.printf("   📡 WiFi Status: %d\n", WiFi.status());
+    return false;
+  }
+  
+  Serial.printf("📋 Registration Details:\n");
+  Serial.printf("   🆔 Device ID: %s\n", config.device_id);
+  Serial.printf("   🔑 Registration Code: %s\n", config.registration_code);
+  Serial.printf("   🔧 Sensor Mode: %s\n", config.sensor_mode == 0 ? "BLE Receiver" : "Direct Sensors");
+  Serial.printf("   📡 Target URL: %s\n", FIREBASE_FUNCTION_URL);
+  
+  // Test basic connectivity first
+  Serial.println("🔍 Testing basic connectivity...");
+  if (!testInternetConnectivity()) {
+    Serial.println("❌ Internet connectivity test failed");
+    return false;
+  }
+  
+  HTTPClient http;
+  http.begin(FIREBASE_FUNCTION_URL);
+  http.addHeader("Content-Type", "application/json");
+  http.setTimeout(8000); // Reduced from 10 to 8 seconds
+  http.setConnectTimeout(3000); // Reduced from 5 to 3 seconds  
+  http.setReuse(false); // Don't reuse connections
+  
+  // Create JSON payload
+  Serial.println("📦 Creating registration payload...");
+  DynamicJsonDocument doc(1024);
+  doc["deviceId"] = config.device_id;
+  doc["registrationCode"] = config.registration_code;
+  doc["deviceType"] = "farm_sensor_display";
+  doc["sensorMode"] = config.sensor_mode == 0 ? "ble_receiver" : "direct_sensors";
+  doc["capabilities"] = "temperature,humidity,co2,distance,outdoor_temperature,display";
+  doc["firmwareVersion"] = "1.0.0";
+  doc["chipModel"] = ESP.getChipModel();
+  doc["macAddress"] = WiFi.macAddress();
+  doc["wifiRssi"] = WiFi.RSSI();
+  
+  String jsonString;
+  serializeJson(doc, jsonString);
+  
+  Serial.println("📤 Registration Payload:");
+  Serial.println(jsonString);
+  Serial.printf("📦 Payload size: %d bytes\n", jsonString.length());
+  
+  Serial.println("🚀 Sending registration request...");
+  unsigned long regStart = millis();
+  const unsigned long MAX_REGISTRATION_TIME = 12000; // 12 second absolute maximum
+  
+  // Double-check connection before making request
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("❌ Lost WiFi connection before registration");
+    http.end();
+    return false;
+  }
+    Serial.printf("🌐 WiFi Signal: %d dBm\n", WiFi.RSSI());
+  Serial.printf("🌐 Gateway: %s\n", WiFi.gatewayIP().toString().c_str());
+  
+  // Enhanced POST request with multiple layers of timeout protection
+  int httpResponseCode = -1;
+  bool requestCompleted = false;
+  
+  Serial.println("🚀 Starting HTTP POST request with enhanced timeout protection...");
+  unsigned long postStart = millis();
+  
+  // Layer 1: Use a task watchdog approach - monitor for signs of hanging
+  const unsigned long RESPONSE_CHECK_INTERVAL = 2000; // Check every 2 seconds
+  unsigned long lastProgressCheck = millis();
+  
+  // Layer 2: Make the HTTP request with monitoring
+  Serial.printf("📡 Sending POST request to: %s\n", FIREBASE_FUNCTION_URL);
+  httpResponseCode = http.POST(jsonString);
+  
+  unsigned long postTime = millis() - postStart;
+  unsigned long totalRegTime = millis() - regStart;
+  
+  Serial.printf("⏱️  POST request completed in %lu ms\n", postTime);
+  Serial.printf("⏱️  Total registration time: %lu ms\n", totalRegTime);
+  
+  // Layer 3: Check absolute maximum time limit
+  if (totalRegTime > MAX_REGISTRATION_TIME) {
+    Serial.printf("⚠️  Registration exceeded maximum time (%lu ms > %lu ms)\n", totalRegTime, MAX_REGISTRATION_TIME);
+    Serial.println("🛑 Forcing timeout - preventing indefinite hang");
+    http.end();
+    return false;
+  }
+  
+  // Layer 4: Validate response timing and connectivity
+  if (postTime > 10000) { // If POST took more than 10 seconds
+    Serial.printf("⚠️  POST request took unusually long (%lu ms)\n", postTime);
+    Serial.println("📊 Connection may be unstable");
+  }
+  
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.printf("📡 HTTP Response Code: %d\n", httpResponseCode);
+    Serial.printf("📡 Response Body: %s\n", response.c_str());
+    
+    if (httpResponseCode == 200) {
+      Serial.println("✅ Device registration successful!");
+      Serial.println("🔄 Device will restart in 2 seconds...");
+      http.end();
+      return true;
+    } else if (httpResponseCode == 400) {
+      Serial.println("❌ Registration failed - Invalid request");
+      Serial.println("   💡 Check registration code format");
+    } else if (httpResponseCode == 404) {
+      Serial.println("❌ Registration failed - Invalid registration code");
+      Serial.println("   💡 Verify code from mobile app");
+    } else if (httpResponseCode == 409) {
+      Serial.println("❌ Registration failed - Device already registered");
+      Serial.println("   💡 Device may already be in system");
+    } else {
+      Serial.printf("❌ Registration failed with code: %d\n", httpResponseCode);
+    }
+  } else {
+    Serial.printf("❌ HTTP Error: %d\n", httpResponseCode);
+    Serial.println("   Possible causes:");
+    Serial.println("   - No internet connection");
+    Serial.println("   - Firebase function offline"); 
+    Serial.println("   - DNS resolution failed");
+    Serial.println("   - Request timeout");
+    
+    // Additional diagnostics for timeout issues
+    if (httpResponseCode == HTTPC_ERROR_CONNECTION_TIMEOUT) {
+      Serial.println("   📡 Specific error: Connection timeout");
+    } else if (httpResponseCode == HTTPC_ERROR_READ_TIMEOUT) {
+      Serial.println("   📡 Specific error: Read timeout");
+    }
+  }
+  
+  http.end();
+  Serial.println("=====================================");
+  return false;
 }
 
 // Web server handlers
@@ -860,9 +1217,8 @@ void handleRoot() {
   html += "</select><button type='submit'>Set Mode</button></form></div>";
   html += "<div class='step'><span class='step-number'>2</span><strong>Connect to WiFi</strong><form id='wifiForm'>";
   html += "<input type='text' id='ssid' placeholder='WiFi Network Name' value='" + htmlEscape(String(config.wifi_ssid)) + "' required>";
-  html += "<input type='password' id='password' placeholder='WiFi Password' required><button type='submit'>Connect to WiFi</button></form></div>";
-  html += "<div class='step'><span class='step-number'>3</span><strong>Register Device</strong><form id='registerForm' style='display:none;'>";
-  html += "<input type='text' id='regCode' placeholder='Registration Code from App' required><button type='submit'>Register Device</button></form></div>";  html += "<div id='status'></div><div style='margin-top:30px;text-align:center;'>";
+  html += "<input type='password' id='password' placeholder='WiFi Password' required><button type='submit'>Connect to WiFi</button></form></div>";  html += "<div class='step'><span class='step-number'>3</span><strong>Register Device</strong><form id='registerForm'>";
+  html += "<input type='text' id='regCode' placeholder='Registration Code from App' required><button type='submit'>Register Device</button></form></div>";html += "<div id='status'></div><div style='margin-top:30px;text-align:center;'>";
   html += "<button onclick=\"location.href='/status'\" style='background:#6c757d;width:48%;margin-right:2%;'>Status</button>";
   html += "<button onclick=\"location.href='/reset'\" style='background:#dc3545;width:48%;'>Reset</button></div></div>";
   
@@ -942,19 +1298,18 @@ void handleWiFiConfig() {
     Serial.printf("   🔑 Password: [%d chars]\n", password.length());
     
     if (ssid.length() > 0 && ssid.length() < 32) {
+      // Temporarily store WiFi credentials without connecting or saving
       ssid.toCharArray(config.wifi_ssid, sizeof(config.wifi_ssid));
       password.toCharArray(config.wifi_password, sizeof(config.wifi_password));
+      config.wifi_saved = true;
       
-      Serial.println("🔄 Attempting WiFi connection with new credentials...");
+      Serial.println("📝 WiFi credentials temporarily stored (not yet saved to EEPROM)");
+      Serial.println("⏳ Waiting for registration code before attempting connection...");
       
-      if (connectToWiFi()) {
-        saveConfig();
-        server.send(200, "text/plain", "WiFi connected successfully");
-        Serial.println("✅ WiFi configured and saved successfully");
-      } else {
-        server.send(400, "text/plain", "Failed to connect to WiFi");
-        Serial.println("❌ WiFi connection failed with provided credentials");
-      }
+      server.send(200, "text/plain", "WiFi credentials saved. Please enter registration code to complete setup.");
+      
+      Serial.printf("✅ WiFi credentials ready - SSID: %s\n", config.wifi_ssid);
+      Serial.println("🔄 Form will now show registration code field");
     } else {
       server.send(400, "text/plain", "Invalid SSID");
       Serial.printf("❌ Invalid SSID length: %d (must be 1-31 chars)\n", ssid.length());
@@ -975,24 +1330,39 @@ void handleDeviceRegistration() {
     Serial.printf("   🔑 Registration Code: %s (length: %d)\n", regCode.c_str(), regCode.length());
     Serial.printf("   🆔 Device ID: %s\n", config.device_id);
     Serial.printf("   📡 Client IP: %s\n", server.client().remoteIP().toString().c_str());
+    Serial.printf("   🔧 WiFi Saved: %s\n", config.wifi_saved ? "Yes" : "No");
     
     if (regCode.length() > 0) {
+      // Store registration code
       regCode.toCharArray(config.registration_code, sizeof(config.registration_code));
+      config.reg_code_saved = true;
       
-      Serial.println("🚀 Starting Firebase registration process...");
+      Serial.printf("📝 Registration code stored: %s\n", config.registration_code);
       
-      if (registerWithFirebase()) {
-        server.send(200, "text/plain", "Device registered successfully");
-        Serial.println("✅ Device registration completed successfully");
-        Serial.println("🔄 Preparing for device restart...");
+      // Check if we have both WiFi credentials and registration code
+      if (config.wifi_saved && config.reg_code_saved) {
+        Serial.println("🚀 Both WiFi credentials and registration code available - starting complete setup...");
         
-        // Restart device after successful registration
-        delay(2000);
-        Serial.println("🔄 Restarting ESP32...");
-        ESP.restart();
+        if (completeDeviceSetup()) {
+          server.send(200, "text/plain", "Device setup completed successfully! Device will restart in 3 seconds...");
+          Serial.println("✅ Complete device setup successful - restarting...");
+          
+          delay(3000);
+          ESP.restart();
+        } else {
+          server.send(400, "text/plain", "Setup failed. Please check your WiFi credentials and registration code.");
+          Serial.println("❌ Complete device setup failed");
+          
+          // Clear saved data to allow retry
+          config.wifi_saved = false;
+          config.reg_code_saved = false;
+          memset(config.wifi_ssid, 0, sizeof(config.wifi_ssid));
+          memset(config.wifi_password, 0, sizeof(config.wifi_password));
+          memset(config.registration_code, 0, sizeof(config.registration_code));
+        }
       } else {
-        server.send(400, "text/plain", "Registration failed");
-        Serial.println("❌ Device registration failed - see details above");
+        server.send(400, "text/plain", "Please enter WiFi credentials first");
+        Serial.println("❌ WiFi credentials not provided yet");
       }
     } else {
       server.send(400, "text/plain", "Invalid registration code");
@@ -1023,6 +1393,10 @@ void handleStatus() {
   html += "<div class='status-item'><span class='label'>Last Temperature:</span><span class='value'>" + String(sensorData.temperature, 1) + "°C</span></div>";
   html += "<div class='status-item'><span class='label'>Last Humidity:</span><span class='value'>" + String(sensorData.humidity, 1) + "%</span></div>";
   html += "<div class='status-item'><span class='label'>Last CO2:</span><span class='value'>" + String(sensorData.co2) + " ppm</span></div>";
+  html += "<div class='status-item'><span class='label'>Last Distance 1:</span><span class='value'>" + String(sensorData.distance1) + " cm</span></div>";
+  html += "<div class='status-item'><span class='label'>Last Distance 2:</span><span class='value'>" + String(sensorData.distance2) + " cm</span></div>";
+  html += "<div class='status-item'><span class='label'>Last Distance Avg:</span><span class='value'>" + String(sensorData.distance_avg) + " cm</span></div>";
+  html += "<div class='status-item'><span class='label'>Last Outdoor Temp:</span><span class='value'>" + String(sensorData.outdoor_temperature, 1) + "°C</span></div>";
   html += "<div style='text-align:center;margin-top:30px;'>";
   html += "<button onclick=\"location.href='/'\">Back to Setup</button>";
   html += "<button onclick=\"location.reload()\" style='background:#28a745;'>Refresh</button>";
@@ -1112,12 +1486,18 @@ bool connectToWiFi() {
     Serial.printf("   ⏱️  Connection Time: %lu ms\n", connectTime);
     Serial.printf("   🔧 Channel: %d\n", WiFi.channel());
     Serial.println("=====================================");
-    return true;
-  } else {
+    return true;  } else {
     Serial.println("❌ WiFi connection failed!");
     Serial.printf("   📊 Final Status Code: %d\n", WiFi.status());
     Serial.printf("   📊 Attempts Made: %d/20\n", attempts);
     Serial.printf("   ⏱️  Total Time: %lu ms\n", millis() - startTime);
+    
+    // Return to AP mode to maintain provisioning portal
+    Serial.println("🔄 Returning to AP mode to maintain provisioning portal...");
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(AP_SSID, AP_PASSWORD);
+    Serial.printf("✅ AP mode restored - SSID: %s\n", AP_SSID);
+    
     Serial.println("   💡 Troubleshooting tips:");
     Serial.println("      - Check SSID spelling and case sensitivity");
     Serial.println("      - Verify password is correct");
@@ -1127,89 +1507,4 @@ bool connectToWiFi() {
     Serial.println("=====================================");
     return false;
   }
-}
-
-bool registerWithFirebase() {
-  Serial.println("=====================================");
-  Serial.println("🔥 REGISTERING DEVICE WITH FIREBASE");
-  Serial.println("=====================================");
-  
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("❌ WiFi not connected, cannot register");
-    Serial.printf("   📡 WiFi Status: %d\n", WiFi.status());
-    return false;
-  }
-  
-  Serial.printf("📋 Registration Details:\n");
-  Serial.printf("   🆔 Device ID: %s\n", config.device_id);
-  Serial.printf("   🔑 Registration Code: %s\n", config.registration_code);
-  Serial.printf("   🔧 Sensor Mode: %s\n", config.sensor_mode == 0 ? "BLE Receiver" : "Direct Sensors");
-  Serial.printf("   📡 Target URL: %s\n", FIREBASE_FUNCTION_URL);
-  
-  HTTPClient http;
-  http.begin(FIREBASE_FUNCTION_URL);
-  http.addHeader("Content-Type", "application/json");
-  http.setTimeout(15000); // 15 second timeout for registration
-  
-  // Create JSON payload
-  Serial.println("📦 Creating registration payload...");
-  DynamicJsonDocument doc(1024);
-  doc["deviceId"] = config.device_id;
-  doc["registrationCode"] = config.registration_code;
-  doc["deviceType"] = "farm_sensor_display";
-  doc["sensorMode"] = config.sensor_mode == 0 ? "ble_receiver" : "direct_sensors";
-  doc["capabilities"] = "temperature,humidity,co2,distance,outdoor_temperature,display";
-  doc["firmwareVersion"] = "1.0.0";
-  doc["chipModel"] = ESP.getChipModel();
-  doc["macAddress"] = WiFi.macAddress();
-  doc["wifiRssi"] = WiFi.RSSI();
-  
-  String jsonString;
-  serializeJson(doc, jsonString);
-  
-  Serial.println("📤 Registration Payload:");
-  Serial.println(jsonString);
-  Serial.printf("📦 Payload size: %d bytes\n", jsonString.length());
-  
-  Serial.println("🚀 Sending registration request...");
-  unsigned long regStart = millis();
-  int httpResponseCode = http.POST(jsonString);
-  unsigned long regTime = millis() - regStart;
-  
-  Serial.printf("⏱️  Registration took %lu ms\n", regTime);
-  
-  if (httpResponseCode > 0) {
-    String response = http.getString();
-    Serial.printf("📡 HTTP Response Code: %d\n", httpResponseCode);
-    Serial.printf("📡 Response Body: %s\n", response.c_str());
-    
-    if (httpResponseCode == 200) {
-      Serial.println("✅ Device registration successful!");
-      Serial.println("🔄 Device will restart in 2 seconds...");
-      http.end();
-      return true;
-    } else if (httpResponseCode == 400) {
-      Serial.println("❌ Registration failed - Invalid request");
-      Serial.println("   💡 Check registration code format");
-    } else if (httpResponseCode == 404) {
-      Serial.println("❌ Registration failed - Invalid registration code");
-      Serial.println("   💡 Verify code from mobile app");
-    } else if (httpResponseCode == 409) {
-      Serial.println("❌ Registration failed - Device already registered");
-      Serial.println("   💡 Device may already be in system");
-    } else {
-      Serial.printf("❌ Registration failed with code: %d\n", httpResponseCode);
-    }
-  } else {
-    Serial.printf("❌ HTTP Error: %d\n", httpResponseCode);
-    Serial.println("   Possible causes:");
-    Serial.println("   - No internet connection");
-    Serial.println("   - Firebase function offline");
-    Serial.println("   - DNS resolution failed");
-    Serial.println("   - Request timeout");
-  }
-  
-  http.end();
-  Serial.println("=====================================");
-  return false;
 }

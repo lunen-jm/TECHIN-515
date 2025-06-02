@@ -79,9 +79,7 @@ exports.registerDevice = functions.https.onRequest(async (req, res) => {
 
     // Get farm and user information from registration code
     const farmId = regCodeData.farmId;
-    const userId = regCodeData.userId;
-
-    // Verify farm exists and user has access
+    const userId = regCodeData.userId;    // Verify farm exists and user has access
     const farmDoc = await db.collection('farms').doc(farmId).get();
     if (!farmDoc.exists) {
       console.log(`Farm not found: ${farmId}`);
@@ -90,7 +88,26 @@ exports.registerDevice = functions.https.onRequest(async (req, res) => {
     }
 
     const farmData = farmDoc.data();
-    if (!farmData.users || !farmData.users.includes(userId)) {
+    
+    // Check user access via modern farmMembers collection first
+    const membershipQuery = db.collection('farmMembers')
+      .where('farmId', '==', farmId)
+      .where('userId', '==', userId);
+    const membershipSnapshot = await membershipQuery.get();
+    
+    let hasAccess = false;
+    if (!membershipSnapshot.empty) {
+      // User has access via farmMembers collection
+      hasAccess = true;
+    } else if (farmData.userId === userId || farmData.user_id === userId) {
+      // Legacy farm ownership check
+      hasAccess = true;
+    } else if (farmData.users && farmData.users.includes(userId)) {
+      // Legacy users array check
+      hasAccess = true;
+    }
+    
+    if (!hasAccess) {
       console.log(`User ${userId} does not have access to farm ${farmId}`);
       res.status(403).json({ error: 'User does not have access to farm' });
       return;
@@ -210,9 +227,7 @@ exports.generateRegistrationCode = functions.https.onRequest(async (req, res) =>
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const userId = decodedToken.uid;
 
-    const { farmId, deviceName, location } = req.body;
-
-    // Verify user has access to the farm
+    const { farmId, deviceName, location } = req.body;    // Verify user has access to the farm
     const farmDoc = await db.collection('farms').doc(farmId).get();
     if (!farmDoc.exists) {
       res.status(404).json({ error: 'Farm not found' });
@@ -220,7 +235,26 @@ exports.generateRegistrationCode = functions.https.onRequest(async (req, res) =>
     }
 
     const farmData = farmDoc.data();
-    if (!farmData.users || !farmData.users.includes(userId)) {
+    
+    // Check user access via modern farmMembers collection first
+    const membershipQuery = db.collection('farmMembers')
+      .where('farmId', '==', farmId)
+      .where('userId', '==', userId);
+    const membershipSnapshot = await membershipQuery.get();
+    
+    let hasAccess = false;
+    if (!membershipSnapshot.empty) {
+      // User has access via farmMembers collection
+      hasAccess = true;
+    } else if (farmData.userId === userId || farmData.user_id === userId) {
+      // Legacy farm ownership check
+      hasAccess = true;
+    } else if (farmData.users && farmData.users.includes(userId)) {
+      // Legacy users array check
+      hasAccess = true;
+    }
+    
+    if (!hasAccess) {
       res.status(403).json({ error: 'User does not have access to this farm' });
       return;
     }
