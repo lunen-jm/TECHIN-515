@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getFunctions } from 'firebase/functions';
-import { initializeAppCheck, ReCaptchaV3Provider, AppCheck } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, AppCheck } from 'firebase/app-check';
 
 // Declare global AppCheck debug token for development
 declare global {
@@ -33,15 +33,32 @@ if (process.env.NODE_ENV === 'development' || process.env.REACT_APP_FIREBASE_APP
 }
 
 let appCheck: AppCheck | undefined;
-try {
-  appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC'),
-    // Optional: Pass isTokenAutoRefreshEnabled as true to enable auto refresh
-    isTokenAutoRefreshEnabled: true
-  });
-  console.log('Firebase App Check initialized successfully');
-} catch (error) {
-  console.error('Error initializing Firebase App Check:', error);
+
+// Function to initialize App Check
+const initializeAppCheckSafely = () => {
+  try {
+    appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider('6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC'),
+      // Optional: Pass isTokenAutoRefreshEnabled as true to enable auto refresh
+      isTokenAutoRefreshEnabled: true
+    });
+    console.log('Firebase App Check initialized successfully');
+  } catch (error) {
+    console.error('Error initializing Firebase App Check:', error);
+    // App Check is optional - the app can still function without it
+    console.warn('App will continue without App Check protection');
+  }
+};
+
+// Initialize App Check with delay to ensure ReCAPTCHA script is loaded
+if (typeof window !== 'undefined') {
+  // Give some time for ReCAPTCHA script to load
+  setTimeout(() => {
+    initializeAppCheckSafely();
+  }, 1000);
+} else {
+  // For SSR environments
+  initializeAppCheckSafely();
 }
 
 // Initialize other Firebase services
