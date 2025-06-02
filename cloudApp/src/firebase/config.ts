@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'development' || process.env.REACT_APP_FIREBASE_APP
 let appCheck: AppCheck | undefined;
 try {
   appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('6LeZMkorAAAAABoOAS1qGaXOphuL79oo-HXhYko1'),
+    provider: new ReCaptchaV3Provider('6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC'),
     // Optional: Pass isTokenAutoRefreshEnabled as true to enable auto refresh
     isTokenAutoRefreshEnabled: true
   });

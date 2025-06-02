@@ -174,9 +174,7 @@ const DeviceSettingsModal: React.FC<DeviceSettingsModalProps> = ({
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-  };
-
-  const handleSaveGeneral = async () => {
+  };  const handleSaveGeneral = async () => {
     try {
       setSaving(true);
       setError(null);
@@ -193,9 +191,7 @@ const DeviceSettingsModal: React.FC<DeviceSettingsModalProps> = ({
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleSaveSettings = async () => {
+  };  const handleSaveSettings = async () => {
     try {
       setSaving(true);
       setError(null);
@@ -219,9 +215,7 @@ const DeviceSettingsModal: React.FC<DeviceSettingsModalProps> = ({
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleSaveCalibration = async () => {
+  };  const handleSaveCalibration = async () => {
     try {
       setSaving(true);
       setError(null);
