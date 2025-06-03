@@ -85,14 +85,13 @@ export const HybridAuthProvider: React.FC<HybridAuthProviderProps> = ({ children
         } catch (error) {
           console.error('Error loading Firebase user metadata:', error);
         }
-      } else if (authMethod === 'auth0' && auth0User) {
-        // Extract role from Auth0 custom claims
-        const isAdmin = auth0User[`https://farmsensors.app/globalAdmin`] || 
-                       auth0User[`https://farmsensors.app/localAdmin`];
+      } else if (authMethod === 'auth0' && auth0User) {        // Extract role from Auth0 custom claims
+        const isAdmin = auth0User[`https://your-domain.app/globalAdmin`] || 
+                       auth0User[`https://your-domain.app/localAdmin`];
         setUserRole(isAdmin ? 'admin' : 'user');
         
         // Extract farm memberships from Auth0 custom claims
-        const memberships = auth0User[`https://farmsensors.app/farmMemberships`] || [];
+        const memberships = auth0User[`https://your-domain.app/farmMemberships`] || [];
         setFarmMemberships(memberships);
       }
     };

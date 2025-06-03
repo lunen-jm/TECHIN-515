@@ -10,7 +10,7 @@ export const auth0Config = {
 // Auth0 configuration for Firebase integration
 export const auth0FirebaseConfig = {
   // Custom claims mapping for Firebase
-  firebaseClaimsNamespace: 'https://farmsensors.app/',
+  firebaseClaimsNamespace: 'https://your-domain.app/',
   // Action to create Firebase custom tokens
   createFirebaseTokenUrl: process.env.REACT_APP_AUTH0_FIREBASE_TOKEN_URL
 };

@@ -49,7 +49,7 @@
    ```
    REACT_APP_AUTH0_DOMAIN=your-tenant.auth0.com
    REACT_APP_AUTH0_CLIENT_ID=your-client-id
-   REACT_APP_AUTH0_AUDIENCE=https://farmsensors.app/api
+   REACT_APP_AUTH0_AUDIENCE=https://your-api-identifier
    ```
 
 ### 2. reCAPTCHA Enterprise Completion
@@ -80,7 +80,7 @@ REACT_APP_FIREBASE_APP_ID=1:23433283193:web:e120d9b1ce4fa22e1f76a8
 # Auth0 Configuration (to be filled after Auth0 setup)
 REACT_APP_AUTH0_DOMAIN=your-tenant.auth0.com
 REACT_APP_AUTH0_CLIENT_ID=your-client-id
-REACT_APP_AUTH0_AUDIENCE=https://farmsensors.app/api
+REACT_APP_AUTH0_AUDIENCE=https://your-api-identifier
 
 # Firebase Functions URL
 REACT_APP_FIREBASE_FUNCTIONS_URL=https://us-central1-grainguard-22f5a.cloudfunctions.net
