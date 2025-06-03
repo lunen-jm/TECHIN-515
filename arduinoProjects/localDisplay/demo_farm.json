@@ -1,0 +1,10 @@
+{
+  "farmId": "demo-farm-001",
+  "farmName": "My Test Farm",
+  "location": "Demo Location",
+  "description": "Demo farm for testing ESP32 hardcoded display",
+  "createdAt": "2025-06-03T17:33:58.000Z",
+  "deviceCount": 1,
+  "status": "active",
+  "deviceSummary": {}
+}

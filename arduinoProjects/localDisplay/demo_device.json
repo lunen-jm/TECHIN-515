@@ -1,0 +1,19 @@
+{
+  "deviceId": "demo-sensor-001",
+  "deviceName": "Demo Sensor",
+  "farmId": "demo-farm-001",
+  "deviceType": "ESP32",
+  "sensorMode": 0,
+  "capabilities": {
+    "temperature": true,
+    "humidity": true,
+    "co2": true,
+    "distance": true,
+    "ble": true
+  },
+  "macAddress": "AA:BB:CC:DD:EE:FF",
+  "status": "offline",
+  "registeredAt": "2025-06-03T17:33:58.000Z",
+  "lastSeen": "2025-06-03T17:33:58.000Z",
+  "lastData": null
+}

@@ -1,0 +1,45 @@
+{"users": [
+{
+  "localId": "9tYnt2BXzqUbgYU1Bp5t6tEszrm1",
+  "email": "user@farmsensors.com",
+  "emailVerified": false,
+  "passwordHash": "ANQMFklH49FSxHciL614KuaTyp8LmbMkdK/8r98EoMgS5oAllTc/iaQmUIKtaT/NqxS3bn3PtFBGdqmBv6i0zg==",
+  "salt": "x8+k9Ur+psjR4Q==",
+  "displayName": "Standard User",
+  "lastSignedInAt": "1748292789956",
+  "createdAt": "1747163517323",
+  "providerUserInfo": []
+},
+{
+  "localId": "HtuMOj7VfnSSPwPWZCx7GEAr9tC3",
+  "email": "admin@farmsensors.com",
+  "emailVerified": false,
+  "passwordHash": "reg5pPVRO75HQZLiD8KYSEumhUl5YZ84tcM/pYhFwa/l4tf0IHF3GxQBmZ2h0sXH1PRv9C7Xgaw5D9ICHQ3AVw==",
+  "salt": "WfzzJSSs1mW59w==",
+  "displayName": "Admin User",
+  "lastSignedInAt": "1747163679061",
+  "createdAt": "1747163518397",
+  "providerUserInfo": []
+},
+{
+  "localId": "IB1h5MCvcNU8AFHa5OQELFWpbwH3",
+  "email": "jaden.a.moon@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "aRuYvuAR7C4z0qtSqPpHmUtFKaGiPU9cgm4zCHG+wPmsCrsQHEgqt+bKRtCsYV2yhETq/U0jbm/nfcoGCtA8iA==",
+  "salt": "wz1h+uNRR8hYLA==",
+  "displayName": "test signup",
+  "lastSignedInAt": "1748028486255",
+  "createdAt": "1748028486255",
+  "providerUserInfo": []
+},
+{
+  "localId": "V3ZgACoCsdN9yOYrc1xQOINg1nq1",
+  "email": "test@example.com",
+  "emailVerified": false,
+  "passwordHash": "7NJh8NP2Trz9+g6SWc8zXImOqx5WWX8hhBMnSSq+tgVvu/b1+t2GXNZYhDlrXkqJSnRRDS6rc7cSS9oBpAuSPg==",
+  "salt": "wF7q6RfE9Sz95A==",
+  "displayName": "Test User",
+  "lastSignedInAt": "1748969762836",
+  "createdAt": "1747162279300",
+  "providerUserInfo": []
+}]}
