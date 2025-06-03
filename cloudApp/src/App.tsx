@@ -20,26 +20,13 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import { AuthProvider } from './context/AuthContext';
 import { FirebaseAuthProvider } from './context/FirebaseAuthContext';
 import { CustomThemeProvider } from './context/ThemeContext';
-import { Auth0Provider } from '@auth0/auth0-react';
 import { checkDatabaseSetup } from './firebase';
 import { createTestUser } from './firebase/services/authService';
 import './theme/theme-extensions'; // Import theme extensions
 import './App.css';
 import './CustomStyles.css';
-
-// Auth0 configuration
-const auth0Domain = process.env.REACT_APP_AUTH0_DOMAIN || '';
-const auth0ClientId = process.env.REACT_APP_AUTH0_CLIENT_ID || '';
-const auth0Audience = process.env.REACT_APP_AUTH0_AUDIENCE;
-
-// Check if Auth0 is properly configured
-const isAuth0Configured = auth0Domain && 
-  auth0ClientId && 
-  !auth0Domain.includes('your-domain') && 
-  !auth0ClientId.includes('your-client-id');
 
 function App() {
   const [notification, setNotification] = useState<{ 
@@ -74,35 +61,14 @@ function App() {
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
   };
-
   // Conditional Auth Provider based on Auth0 configuration
   const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    if (isAuth0Configured) {
-      return (
-        <Auth0Provider
-          domain={auth0Domain}
-          clientId={auth0ClientId}
-          authorizationParams={{
-            redirect_uri: window.location.origin,
-            audience: auth0Audience,
-            scope: 'openid profile email'
-          }}
-          useRefreshTokens={true}
-          cacheLocation="localstorage"
-        >
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </Auth0Provider>
-      );
-    } else {
-      // Use Firebase authentication when Auth0 is not configured
-      return (
-        <FirebaseAuthProvider>
-          {children}
-        </FirebaseAuthProvider>
-      );
-    }
+    // Always use Firebase authentication (Auth0 disabled for simplicity)
+    return (
+      <FirebaseAuthProvider>
+        {children}
+      </FirebaseAuthProvider>
+    );
   };
 
   return (

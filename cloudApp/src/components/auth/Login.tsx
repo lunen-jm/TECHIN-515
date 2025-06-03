@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -15,7 +15,6 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Google as GoogleIcon } from '@mui/icons-material';
-import { useAuth0 } from '@auth0/auth0-react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../../firebase/config';
@@ -25,91 +24,49 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [useFirebase, setUseFirebase] = useState(false); // Toggle for Firebase auth
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // Check if Auth0 is configured
-  const isAuth0Configured = process.env.REACT_APP_AUTH0_DOMAIN && 
-    process.env.REACT_APP_AUTH0_CLIENT_ID;
-  
-  // Always call useAuth0 (required by React Hooks rules)
-  const { 
-    loginWithRedirect, 
-    isAuthenticated, 
-    isLoading, 
-    error: auth0Error 
-  } = useAuth0();
-  
   const isDevMode = process.env.NODE_ENV === 'development';
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
-
-  // Handle Auth0 errors
-  useEffect(() => {
-    if (auth0Error) {
-      setError(auth0Error.message || 'Authentication failed');
-    }
-  }, [auth0Error]);  const handleEmailSignIn = async (e: React.FormEvent) => {
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
     try {
-      if (isAuth0Configured && !useFirebase && loginWithRedirect) {
-        // Use Auth0 authentication
-        await loginWithRedirect({
-          authorizationParams: {
-            connection: 'Username-Password-Authentication',
-            login_hint: email
-          }
-        });
-      } else {
-        // Use Firebase authentication
-        await signInWithEmailAndPassword(auth, email, password);
-        navigate('/');
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/');
     } catch (error: any) {
       setError(error.message || 'Failed to sign in');
+    } finally {
       setLoading(false);
     }
   };
+
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
     
     try {
-      if (isAuth0Configured && !useFirebase && loginWithRedirect) {
-        // Use Auth0 Google connection
-        await loginWithRedirect({
-          authorizationParams: {
-            connection: 'google-oauth2'
-          }
-        });
-      } else {
-        // Use Firebase Google authentication
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-        navigate('/');
-      }
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      navigate('/');
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Google');
+    } finally {
       setLoading(false);
     }
   };
+
   const useTestAccount = () => {
     setEmail('test@example.com');
     setPassword('Test123!');
-    setUseFirebase(true); // Enable Firebase mode for test account
-  };
-  return (
-    <Grid container sx={{ minHeight: '100vh' }}>      {/* Left side - Login Form */}      <Grid        item 
+  };  return (
+    <Grid container sx={{ minHeight: '100vh' }}>
+      {/* Left side - Login Form */}
+      <Grid
+        item 
         xs={12} 
         md={6} 
         sx={{ 
@@ -122,7 +79,7 @@ const Login: React.FC = () => {
           zIndex: 1,
           boxShadow: '10px 0 30px -5px rgba(0, 0, 0, 0.3)'
         }}
-      >        
+      >
         {/* Logo and App Name in top left */}
         <Box sx={{ position: 'absolute', top: 24, left: 24, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ width: 32, height: 32, bgcolor: 'primary.main', borderRadius: '50%' }}></Box>
@@ -134,41 +91,12 @@ const Login: React.FC = () => {
         <Box sx={{ maxWidth: 480, width: '100%', mx: 'auto' }}>
           <Typography component="h1" variant="h4" gutterBottom fontWeight="700">
             Welcome Back
-          </Typography>          <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-            {isAuth0Configured 
-              ? (useFirebase ? 'Sign in with Firebase (Test Mode)' : 'Sign in with your Auth0 account')
-              : 'Sign in to continue to your dashboard'
-            }
+          </Typography>
+          <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
+            Sign in to continue to your dashboard
           </Typography>
           
           {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-          
-          {isAuth0Configured && isDevMode && (
-            <Alert 
-              severity={useFirebase ? "warning" : "info"} 
-              sx={{ mb: 3 }}
-              action={
-                <Button 
-                  color="inherit" 
-                  size="small" 
-                  onClick={() => setUseFirebase(!useFirebase)}
-                >
-                  Switch to {useFirebase ? 'Auth0' : 'Firebase'}
-                </Button>
-              }
-            >
-              {useFirebase 
-                ? 'Using Firebase authentication (Test Mode)' 
-                : 'Using Auth0 authentication'
-              }
-            </Alert>
-          )}
-          
-          {!isAuth0Configured && (
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Using Firebase authentication (Auth0 not configured)
-            </Alert>
-          )}
           
           <Box component="form" onSubmit={handleEmailSignIn} sx={{ mt: 1 }}>
             <TextField
@@ -182,9 +110,10 @@ const Login: React.FC = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            />            <TextField
+            />
+            <TextField
               margin="normal"
-              required={!isAuth0Configured || useFirebase}
+              required
               fullWidth
               name="password"
               label="Password"
@@ -193,17 +122,15 @@ const Login: React.FC = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={Boolean(isAuth0Configured && !useFirebase)}
-              helperText={isAuth0Configured && !useFirebase ? 'Password not required for Auth0' : ''}
             />
-              <Button
+            <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              disabled={loading || isLoading}
+              disabled={loading}
             >
-              {(loading || isLoading) ? <CircularProgress size={24} /> : 'Sign In'}
+              {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
             
             <Button
@@ -211,7 +138,7 @@ const Login: React.FC = () => {
               variant="outlined"
               startIcon={<GoogleIcon />}
               onClick={handleGoogleSignIn}
-              disabled={loading || isLoading}
+              disabled={loading}
               sx={{ mb: 2 }}
             >
               Sign In with Google
@@ -262,7 +189,8 @@ const Login: React.FC = () => {
           )}
         </Box>
       </Grid>
-        {/* Right side - Farm Photo (hidden on mobile) */}
+      
+      {/* Right side - Farm Photo (hidden on mobile) */}
       {!isMobile && (
         <Grid 
           item 
@@ -289,7 +217,8 @@ const Login: React.FC = () => {
           </Box>
         </Grid>
       )}
-    </Grid>  );
+    </Grid>
+  );
 };
 
 export default Login;
