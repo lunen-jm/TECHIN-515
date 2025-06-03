@@ -27,9 +27,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize App Check
-// In development or when debug flag is set, register the debug token to prevent console errors
+// Completely disable App Check in development to prevent 400 errors
 if (process.env.NODE_ENV === 'development' || process.env.REACT_APP_FIREBASE_APPCHECK_DEBUG_MODE === 'true') {
-  window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;  console.log('Firebase App Check debug mode enabled');
+  // Do not set debug token in development to prevent initialization attempts
+  console.log('🔧 Firebase App Check disabled in development mode');
 }
 
 let appCheck: AppCheck | undefined;
@@ -37,34 +38,41 @@ let appCheck: AppCheck | undefined;
 // Function to initialize App Check
 const initializeAppCheckSafely = () => {
   try {
-    // In development, disable App Check enforcement to prevent throttling
-    if (process.env.NODE_ENV === 'development') {
-      console.log('App Check skipped in development mode');
+    // Skip App Check entirely in development to prevent 400 errors
+    if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
+      console.log('🔧 App Check skipped in development mode');
       return;
     }
     
+    // Only initialize in production or when explicitly required
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider('6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC'),
-      // Disable auto refresh in development to prevent throttling
-      isTokenAutoRefreshEnabled: process.env.NODE_ENV === 'production'
+      isTokenAutoRefreshEnabled: true
     });
-    console.log('Firebase App Check initialized successfully');
+    console.log('✅ Firebase App Check initialized successfully');
   } catch (error) {
-    console.error('Error initializing Firebase App Check:', error);
+    console.error('❌ Error initializing Firebase App Check:', error);
     // App Check is optional - the app can still function without it
-    console.warn('App will continue without App Check protection');
+    console.warn('⚠️ App will continue without App Check protection');
   }
 };
 
 // Initialize App Check with delay to ensure ReCAPTCHA script is loaded
 if (typeof window !== 'undefined') {
-  // Give some time for ReCAPTCHA script to load
-  setTimeout(() => {
-    initializeAppCheckSafely();
-  }, 1000);
+  // Only initialize in production or specific environments
+  if (process.env.NODE_ENV === 'production' && window.location.hostname !== 'localhost') {
+    // Give some time for ReCAPTCHA script to load
+    setTimeout(() => {
+      initializeAppCheckSafely();
+    }, 1000);
+  } else {
+    console.log('🔧 App Check initialization skipped for development');
+  }
 } else {
-  // For SSR environments
-  initializeAppCheckSafely();
+  // For SSR environments - also skip in development
+  if (process.env.NODE_ENV === 'production') {
+    initializeAppCheckSafely();
+  }
 }
 
 // Initialize other Firebase services
