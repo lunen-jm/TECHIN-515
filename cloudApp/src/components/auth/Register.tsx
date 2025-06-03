@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -11,7 +11,7 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { registerWithEmail } from '../../firebase/services/authService';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
@@ -24,6 +24,22 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  const { loginWithRedirect, isAuthenticated, isLoading, error: auth0Error } = useAuth0();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Handle Auth0 errors
+  useEffect(() => {
+    if (auth0Error) {
+      setError(auth0Error.message || 'Registration failed');
+    }
+  }, [auth0Error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,11 +60,16 @@ const Register: React.FC = () => {
     setLoading(true);
     
     try {
-      await registerWithEmail(email, password, name);
-      navigate('/');
+      // Use Auth0 signup with email/password
+      await loginWithRedirect({
+        authorizationParams: {
+          connection: 'Username-Password-Authentication',
+          screen_hint: 'signup',
+          login_hint: email
+        }
+      });
     } catch (error: any) {
       setError(error.message || 'Failed to create account');
-    } finally {
       setLoading(false);
     }
   };
@@ -134,15 +155,14 @@ const Register: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-            
-            <Button
+              <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
+              disabled={loading || isLoading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Create Account'}
+              {(loading || isLoading) ? <CircularProgress size={24} /> : 'Create Account'}
             </Button>
             
             <Box sx={{ mt: 2, textAlign: 'center' }}>

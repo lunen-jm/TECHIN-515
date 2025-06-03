@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -15,7 +15,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Google as GoogleIcon } from '@mui/icons-material';
-import { signInWithEmail, signInWithGoogle } from '../../firebase/services/authService';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
@@ -27,7 +27,23 @@ const Login: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
+  const { loginWithRedirect, isAuthenticated, isLoading, error: auth0Error } = useAuth0();
+  
   const isDevMode = process.env.NODE_ENV === 'development';
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Handle Auth0 errors
+  useEffect(() => {
+    if (auth0Error) {
+      setError(auth0Error.message || 'Authentication failed');
+    }
+  }, [auth0Error]);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +51,14 @@ const Login: React.FC = () => {
     setLoading(true);
     
     try {
-      await signInWithEmail(email, password);
-      navigate('/');
+      await loginWithRedirect({
+        authorizationParams: {
+          connection: 'Username-Password-Authentication',
+          login_hint: email
+        }
+      });
     } catch (error: any) {
       setError(error.message || 'Failed to sign in');
-    } finally {
       setLoading(false);
     }
   };
@@ -49,11 +68,13 @@ const Login: React.FC = () => {
     setLoading(true);
     
     try {
-      await signInWithGoogle();
-      navigate('/');
+      await loginWithRedirect({
+        authorizationParams: {
+          connection: 'google-oauth2'
+        }
+      });
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Google');
-    } finally {
       setLoading(false);
     }
   };
@@ -121,15 +142,14 @@ const Login: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            
-            <Button
+              <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
+              disabled={loading || isLoading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Sign In'}
+              {(loading || isLoading) ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
             
             <Button
@@ -137,7 +157,7 @@ const Login: React.FC = () => {
               variant="outlined"
               startIcon={<GoogleIcon />}
               onClick={handleGoogleSignIn}
-              disabled={loading}
+              disabled={loading || isLoading}
               sx={{ mb: 2 }}
             >
               Sign In with Google

@@ -11,7 +11,7 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { resetPassword } from '../../firebase/services/authService';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Link as RouterLink } from 'react-router-dom';
 
 const ForgotPassword: React.FC = () => {
@@ -21,6 +21,8 @@ const ForgotPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  const { loginWithRedirect } = useAuth0();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +37,16 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
     
     try {
-      await resetPassword(email);
-      setMessage('Password reset email sent. Check your inbox.');
+      // Redirect to Auth0's password reset page
+      await loginWithRedirect({
+        authorizationParams: {
+          connection: 'Username-Password-Authentication',
+          screen_hint: 'forgot_password',
+          login_hint: email
+        }
+      });
     } catch (error: any) {
-      setError(error.message || 'Failed to reset password');
-    } finally {
+      setError(error.message || 'Failed to initiate password reset');
       setLoading(false);
     }
   };

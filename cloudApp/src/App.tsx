@@ -22,11 +22,17 @@ import ForgotPassword from './components/auth/ForgotPassword';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CustomThemeProvider } from './context/ThemeContext';
+import { Auth0Provider } from '@auth0/auth0-react';
 import { checkDatabaseSetup } from './firebase';
 import { createTestUser } from './firebase/services/authService';
 import './theme/theme-extensions'; // Import theme extensions
 import './App.css';
 import './CustomStyles.css';
+
+// Auth0 configuration
+const auth0Domain = process.env.REACT_APP_AUTH0_DOMAIN || '';
+const auth0ClientId = process.env.REACT_APP_AUTH0_CLIENT_ID || '';
+const auth0Audience = process.env.REACT_APP_AUTH0_AUDIENCE;
 
 function App() {
   const [notification, setNotification] = useState<{ 
@@ -61,13 +67,23 @@ function App() {
 
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
-  };
-  return (
-    <CustomThemeProvider>
-      <CssBaseline />
-      <AuthProvider>
-        <Router>
-          <Routes>
+  };  return (
+    <Auth0Provider
+      domain={auth0Domain}
+      clientId={auth0ClientId}
+      authorizationParams={{
+        redirect_uri: window.location.origin,
+        audience: auth0Audience,
+        scope: 'openid profile email'
+      }}
+      useRefreshTokens={true}
+      cacheLocation="localstorage"
+    >
+      <CustomThemeProvider>
+        <CssBaseline />
+        <AuthProvider>
+          <Router>
+            <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -179,15 +195,16 @@ function App() {
             } />
             
             {/* Redirect any unknown routes to home */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+            <Route path="*" element={<Navigate to="/" />} />          </Routes>
         </Router>
       </AuthProvider>
       <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification}>
         <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>
-          {notification.message}        </Alert>
+          {notification.message}
+        </Alert>
       </Snackbar>
     </CustomThemeProvider>
+    </Auth0Provider>
   );
 }
 
