@@ -22,3 +22,19 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Files with sensitive information
+**/FINAL_SOLUTION.md
+**/FIX_400_ERROR_GUIDE.md
+**/FIX_403_ERROR_GUIDE.md
+**/RECAPTCHA_VERIFICATION_CHECKLIST.md
+**/verify-recaptcha.js
+**/quick-test.js
+**/verify-recaptcha-commands.ps1
+**/test-recaptcha-implementation.ps1
+security-scan.ps1
+.gitignore-credentials
+
+# Any file containing sensitive keys or credentials
+**/*-key.json
+**/service-account*.json

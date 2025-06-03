@@ -1,0 +1,29 @@
+# Firebase specific gitignore
+
+# Dependencies
+node_modules/
+
+# Environment configuration
+.runtimeconfig.json
+*.log
+
+# Service accounts and keys
+*-key.json
+*-keys.json
+service-account*.json
+serviceAccount*.json
+
+# Sensitive configuration files
+*firebase-adminsdk*.json
+
+# Files containing sensitive information
+functions/recaptchaVerification.js
+functions/recaptchaAPI.js
+
+# Local emulator data
+*-debug.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+pubsub-debug.log
+.firebase/

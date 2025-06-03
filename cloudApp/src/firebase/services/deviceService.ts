@@ -4,6 +4,7 @@ import {
   getDocs, query, where, updateDoc, deleteDoc,
   orderBy, limit, Timestamp, onSnapshot
 } from 'firebase/firestore';
+import { getReCaptchaToken } from '../recaptcha';
 
 // Types
 interface Device {
@@ -48,8 +49,10 @@ export const generateRegistrationCode = async (
     if (!currentUser) {
       throw new Error('User not authenticated');
     }
+      const idToken = await currentUser.getIdToken();
     
-    const idToken = await currentUser.getIdToken();
+    // Generate reCAPTCHA token for additional security
+    const recaptchaToken = await getReCaptchaToken('generate_registration_code');
     
     // Make HTTP request to the Cloud Function
     const response = await fetch('https://us-central1-grainguard-22f5a.cloudfunctions.net/generateRegistrationCode', {
@@ -57,6 +60,7 @@ export const generateRegistrationCode = async (
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${idToken}`,
+        'X-Recaptcha-Token': recaptchaToken || '',
       },
       body: JSON.stringify(request),
     });

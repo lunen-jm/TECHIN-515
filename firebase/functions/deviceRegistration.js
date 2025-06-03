@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const { verifyRecaptchaForWebApp, shouldSkipRecaptcha } = require('./recaptchaVerification');
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
@@ -210,7 +211,7 @@ exports.generateRegistrationCode = functions.https.onRequest(async (req, res) =>
   // Enable CORS for web app requests
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Recaptcha-Token');
 
   if (req.method === 'OPTIONS') {
     res.status(200).send();
@@ -223,6 +224,21 @@ exports.generateRegistrationCode = functions.https.onRequest(async (req, res) =>
   }
 
   try {
+    // Skip reCAPTCHA for ESP32 devices, require it for web browsers
+    if (!shouldSkipRecaptcha(req)) {
+      // Verify reCAPTCHA token for security
+      const recaptchaResult = await verifyRecaptchaForWebApp(req, 'generate_registration_code');
+      if (!recaptchaResult.valid) {
+        console.log(`❌ reCAPTCHA verification failed: ${recaptchaResult.error}`);
+        res.status(recaptchaResult.httpStatus || 403).json({ 
+          error: recaptchaResult.error || 'reCAPTCHA verification failed',
+          score: recaptchaResult.score
+        });
+        return;
+      }
+      console.log(`✅ reCAPTCHA verified with score: ${recaptchaResult.score}`);
+    }
+    
     // For onRequest functions, we need to verify the Firebase ID token manually
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
