@@ -8,22 +8,23 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
  */
 export const getReCaptchaToken = async (action: string): Promise<string | null> => {
   try {
+    // Check if reCAPTCHA Enterprise is available
     if (typeof window === 'undefined' || 
-        typeof grecaptcha === 'undefined' || 
-        !grecaptcha.enterprise) {
+        !window.grecaptcha || 
+        !window.grecaptcha.enterprise) {
       console.warn('reCAPTCHA Enterprise not available');
       return null;
     }
     
     // Wait for reCAPTCHA to be ready
     return new Promise<string>((resolve, reject) => {
-      grecaptcha.enterprise.ready(async () => {
+      window.grecaptcha.enterprise.ready(async () => {
         try {
           // Get the reCAPTCHA site key from .env or use hardcoded one for now
           const siteKey = process.env.REACT_APP_RECAPTCHA_SITE_KEY || 
                          '6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC';
           
-          const token = await grecaptcha.enterprise.execute(siteKey, { action });
+          const token = await window.grecaptcha.enterprise.execute(siteKey, { action });
           resolve(token);
         } catch (error) {
           console.error('Error generating reCAPTCHA token:', error);

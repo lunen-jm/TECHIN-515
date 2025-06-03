@@ -1,17 +1,6 @@
 // ReCAPTCHA Enterprise service for generating tokens
 // This service handles generating ReCAPTCHA tokens for Firebase App Check and form protection
 
-declare global {
-  interface Window {
-    grecaptcha: {
-      enterprise: {
-        ready: (callback: () => void) => void;
-        execute: (siteKey: string, options: { action: string }) => Promise<string>;
-      };
-    };
-  }
-}
-
 const RECAPTCHA_SITE_KEY = '6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC';
 
 /**
