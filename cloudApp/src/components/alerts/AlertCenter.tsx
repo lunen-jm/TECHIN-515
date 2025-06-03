@@ -42,7 +42,7 @@ import {
 } from '@mui/icons-material';
 import { Alert, AlertSeverity, AlertStatus, AlertStats } from '../../types/alerts';
 import { AlertService } from '../../services/alertService';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/FirebaseAuthContext';
 
 // Style guide colors
 const STYLE_COLORS = {

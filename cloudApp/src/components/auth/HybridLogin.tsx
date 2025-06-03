@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Google as GoogleIcon, Email as EmailIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/FirebaseAuthContext';
 import { useAuth as useFirebaseAuth } from '../../context/FirebaseAuthContext';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../../firebase/config';

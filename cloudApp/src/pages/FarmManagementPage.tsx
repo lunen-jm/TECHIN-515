@@ -23,7 +23,7 @@ import {
   PersonAdd as PersonAddIcon,
 } from '@mui/icons-material';
 import { getFarm, getFarmMembers, removeUserFromFarm, getUserFarmRole } from '../firebase/services/farmService';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/FirebaseAuthContext';
 import AddUserToFarmForm from '../components/forms/AddUserToFarmForm';
 
 interface FarmMember {

@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { PersonAdd as PersonAddIcon } from '@mui/icons-material';
 import { addUserToFarm } from '../../firebase/services/farmService';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/FirebaseAuthContext';
 
 interface AddUserToFarmFormProps {
   farmId: string;

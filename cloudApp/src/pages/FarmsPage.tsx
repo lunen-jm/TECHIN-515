@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { getUserAccessibleFarms } from '../firebase/services/farmService';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/FirebaseAuthContext';
 import { 
   Agriculture as AgricultureIcon, 
   Add as AddIcon,
@@ -152,8 +152,7 @@ const FarmsPage: React.FC = () => {
       ) : (
         <Grid container spacing={3} className="farm-list-container">
           {farms.map((farm, index) => (
-            <Grid item xs={12} sm={6} md={4} key={farm.id}>
-              <Card
+            <Grid item xs={12} sm={6} md={4} key={farm.id}>              <Card
                 elevation={1}
                 className="farm-card"                sx={{
                   height: '100%',
@@ -165,16 +164,38 @@ const FarmsPage: React.FC = () => {
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)'
-                  }
+                  },
+                  position: 'relative'
                 }}
               >
+                {/* Dropdown Menu for Farm Actions - positioned outside the clickable area */}
+                {(farm.userRole === 'owner' || farm.userRole === 'admin') && (
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleMenuOpen(e, farm.id)}
+                    sx={{ 
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      zIndex: 2,
+                      bgcolor: 'background.paper',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                      '&:hover': { 
+                        bgcolor: 'action.hover',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
+                      }
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                )}
                 <CardActionArea onClick={() => handleFarmClick(farm.id)} sx={{ flexGrow: 1 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}>
                         <AgricultureIcon />
                       </Avatar>
-                      <Box sx={{ flexGrow: 1 }}>
+                      <Box sx={{ flexGrow: 1, pr: 1 }}>
                         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
                           {farm.name}
                         </Typography>
@@ -185,19 +206,6 @@ const FarmsPage: React.FC = () => {
                           </Typography>
                         </Box>
                       </Box>
-                      {/* Dropdown Menu for Farm Actions */}
-                      {(farm.userRole === 'owner' || farm.userRole === 'admin') && (
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuOpen(e, farm.id)}
-                          sx={{ 
-                            ml: 1,
-                            '&:hover': { bgcolor: 'action.hover' }
-                          }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      )}
                     </Box>
                     
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

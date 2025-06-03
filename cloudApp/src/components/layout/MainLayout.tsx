@@ -57,18 +57,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     } catch (error) {
       console.error('Error signing out:', error);
     }
-  };const mainMenuItems = [
+  };  const mainMenuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Farms', icon: <AgricultureIcon />, path: '/farms' },
     { text: 'Devices', icon: <DevicesIcon />, path: '/devices' },
+    { text: 'Alerts', icon: <NotificationsIcon />, path: '/alerts' },
     ...(isDevMode ? [{ text: 'Admin', icon: <AdminIcon />, path: '/admin' }] : []),
   ];
 
   const bottomMenuItems = [
-    { text: 'Alerts', icon: <NotificationsIcon />, path: '/alerts' },
     { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
-  ];  return (
+  ];return (
     <Box sx={{ display: 'flex' }}>
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}

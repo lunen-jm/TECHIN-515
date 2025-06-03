@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import { getFarm, getFarmDevices, getUserFarmRole } from '../../firebase/services/farmService';
 import { getDevice } from '../../firebase/services/deviceService';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/FirebaseAuthContext';
 import DeviceCard from '../../components/cards/DeviceCard';
 
 interface Farm {

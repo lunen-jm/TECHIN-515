@@ -165,44 +165,58 @@ const DeviceCard: React.FC<DeviceProps> = ({
     const clampedReading = Math.max(minDepth, Math.min(maxDepth, lidarReading));
     return Math.round(((maxDepth - clampedReading) / (maxDepth - minDepth)) * 100);
   };
-
   return (
-    <Tooltip 
-      title={hasActiveAlerts ? "This device has active alerts" : "Device status: " + getStatusText()}
-      placement="top"
-    >
-      <Card 
-        sx={{ 
-          height: '100%',
-          position: 'relative',
-          border: hasActiveAlerts ? '2px solid #ff5722' : '1px solid',
-          borderColor: hasActiveAlerts ? '#ff5722' : 'divider',
-          boxShadow: hasActiveAlerts ? '0 4px 12px rgba(255, 87, 34, 0.2)' : 1,
-          cursor: selectable ? 'default' : 'pointer',
-          transition: 'all 0.2s ease-in-out',
-          opacity: selected ? 0.8 : 1,
-          transform: selected ? 'scale(0.98)' : 'scale(1)',
+    <Box sx={{ position: 'relative', height: '100%' }}>
+      {/* Menu button positioned outside CardActionArea */}
+      <IconButton
+        size="small"
+        onClick={handleMenuOpen}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 2,
+          bgcolor: 'background.paper',
+          boxShadow: 1,
           '&:hover': {
-            boxShadow: hasActiveAlerts ? '0 6px 16px rgba(255, 87, 34, 0.3)' : 3,
-            transform: selected ? 'scale(0.98)' : 'scale(1.02)'
-          }
+            bgcolor: 'action.hover',
+            boxShadow: 2,
+          },
         }}
-      >        <CardActionArea 
+      >
+        <MoreVertIcon fontSize="small" />
+      </IconButton>
+
+      <Tooltip 
+        title={hasActiveAlerts ? "This device has active alerts" : "Device status: " + getStatusText()}
+        placement="top"
+      >
+        <Card 
+          sx={{ 
+            height: '100%',
+            position: 'relative',
+            border: hasActiveAlerts ? '2px solid #ff5722' : '1px solid',
+            borderColor: hasActiveAlerts ? '#ff5722' : 'divider',
+            boxShadow: hasActiveAlerts ? '0 4px 12px rgba(255, 87, 34, 0.2)' : 1,
+            cursor: selectable ? 'default' : 'pointer',
+            transition: 'all 0.2s ease-in-out',
+            opacity: selected ? 0.8 : 1,
+            transform: selected ? 'scale(0.98)' : 'scale(1)',
+            '&:hover': {
+              boxShadow: hasActiveAlerts ? '0 6px 16px rgba(255, 87, 34, 0.3)' : 3,
+              transform: selected ? 'scale(0.98)' : 'scale(1.02)'
+            }
+          }}
+        >
+        
+        <CardActionArea 
           onClick={handleCardClick}
           sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
-        >          <CardContent sx={{ flexGrow: 1, p: 2 }}>
-            {/* Three-column layout: Menu | Device Info | Silo */}
+        >          <CardContent sx={{ flexGrow: 1, p: 2, pr: 6 }}>
+            {/* Three-column layout: Selection | Device Info | Silo */}
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-              {/* Left column - Menu and selection */}
+              {/* Left column - Selection only */}
               <Box sx={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
-                {/* Menu button */}
-                <IconButton
-                  size="small"
-                  onClick={handleMenuOpen}
-                >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-                
                 {/* Selection checkbox */}
                 {selectable && (
                   <Checkbox
@@ -211,8 +225,7 @@ const DeviceCard: React.FC<DeviceProps> = ({
                     size="small"
                     sx={{ p: 0 }}
                   />
-                )}
-              </Box>
+                )}              </Box>
 
               {/* Middle column - Device information */}
               <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -391,10 +404,10 @@ const DeviceCard: React.FC<DeviceProps> = ({
               <DeleteIcon fontSize="small" />
             </ListItemIcon>
             Delete
-          </MenuItem>
-        </Menu>
-      </Card>
-    </Tooltip>
+          </MenuItem>        </Menu>
+        </Card>
+      </Tooltip>
+    </Box>
   );
 };
 

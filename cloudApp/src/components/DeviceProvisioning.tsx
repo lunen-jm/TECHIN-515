@@ -45,7 +45,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { generateRegistrationCode } from '../firebase/services/deviceService';
 import { getFarms } from '../firebase/services/farmService';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/FirebaseAuthContext';
 
 interface Farm {
   id: string;

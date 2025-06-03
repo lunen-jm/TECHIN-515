@@ -35,19 +35,34 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
   };
   
   const statusColor = getStatusColor(clampedPercentage);
-
-  // Calculate which zones should be visible based on fill percentage
-  const getVisibleZones = (percentage: number) => {
-    return {
-      bottom: percentage > 0,
-      second: percentage > 25,
-      third: percentage > 50,
-      top: percentage > 75
+  // Calculate fill heights for each zone based on actual percentage
+  const getZoneFills = (percentage: number) => {
+    const zones = {
+      bottom: { start: 0, end: 25 },
+      second: { start: 25, end: 50 },
+      third: { start: 50, end: 75 },
+      top: { start: 75, end: 100 }
     };
+
+    const fillHeights: { [key: string]: number } = {};
+    
+    Object.entries(zones).forEach(([zoneName, zone]) => {
+      if (percentage <= zone.start) {
+        fillHeights[zoneName] = 0;
+      } else if (percentage >= zone.end) {
+        fillHeights[zoneName] = 100;
+      } else {
+        // Calculate partial fill within this zone
+        const zoneProgress = (percentage - zone.start) / (zone.end - zone.start);
+        fillHeights[zoneName] = zoneProgress * 100;
+      }
+    });
+
+    return fillHeights;
   };
 
-  const visibleZones = getVisibleZones(clampedPercentage);
-    if (variant === 'minimal') {
+  const zoneFills = getZoneFills(clampedPercentage);
+  if (variant === 'minimal') {
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={1.5}>        
         <Box
@@ -68,47 +83,95 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
           <Box
             sx={{
               height: '25%',
-              background: visibleZones.top ? siloColors.top : 'transparent',
+              position: 'relative',
               borderRadius: '12px 12px 0 0',
-              opacity: visibleZones.top ? 1 : 0.1,
-              transition: 'opacity 0.6s ease',
               border: '1px solid rgba(0,0,0,0.05)',
+              background: '#F0F0F0',
+              overflow: 'hidden',
             }}
-          />
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: `${zoneFills.top}%`,
+                background: siloColors.top,
+                transition: 'height 0.6s ease',
+              }}
+            />
+          </Box>
           
           {/* Third zone (50-75%) - Leaf Green */}
           <Box
             sx={{
               height: '25%',
-              background: visibleZones.third ? siloColors.third : 'transparent',
-              opacity: visibleZones.third ? 1 : 0.1,
-              transition: 'opacity 0.6s ease',
+              position: 'relative',
               border: '1px solid rgba(0,0,0,0.05)',
+              background: '#F0F0F0',
+              overflow: 'hidden',
             }}
-          />
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: `${zoneFills.third}%`,
+                background: siloColors.third,
+                transition: 'height 0.6s ease',
+              }}
+            />
+          </Box>
           
           {/* Second zone (25-50%) - Forest Green */}
           <Box
             sx={{
               height: '25%',
-              background: visibleZones.second ? siloColors.second : 'transparent',
-              opacity: visibleZones.second ? 1 : 0.1,
-              transition: 'opacity 0.6s ease',
+              position: 'relative',
               border: '1px solid rgba(0,0,0,0.05)',
+              background: '#F0F0F0',
+              overflow: 'hidden',
             }}
-          />
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: `${zoneFills.second}%`,
+                background: siloColors.second,
+                transition: 'height 0.6s ease',
+              }}
+            />
+          </Box>
           
           {/* Bottom zone (0-25%) - Dark Green */}
           <Box
             sx={{
               height: '25%',
-              background: visibleZones.bottom ? siloColors.bottom : 'transparent',
+              position: 'relative',
               borderRadius: '0 0 4px 4px',
-              opacity: visibleZones.bottom ? 1 : 0.1,
-              transition: 'opacity 0.6s ease',
               border: '1px solid rgba(0,0,0,0.05)',
+              background: '#F0F0F0',
+              overflow: 'hidden',
             }}
-          />
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: `${zoneFills.bottom}%`,
+                background: siloColors.bottom,
+                transition: 'height 0.6s ease',
+              }}
+            />
+          </Box>
         </Box>
         
         {showPercentage && (
@@ -118,7 +181,7 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
         )}
       </Box>
     );
-  }  if (variant === 'detailed') {
+  }if (variant === 'detailed') {
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
         {label && (
@@ -149,8 +212,7 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
             }}
           />
           
-          {/* Main container with stacked zones */}
-          <Box
+          {/* Main container with stacked zones */}          <Box
             sx={{
               width: '100%',
               height: height - 16,
@@ -169,47 +231,95 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
             <Box
               sx={{
                 height: '25%',
-                background: visibleZones.top ? siloColors.top : 'transparent',
-                opacity: visibleZones.top ? 1 : 0.1,
-                transition: 'opacity 0.6s ease',
+                position: 'relative',
                 border: '1px solid rgba(0,0,0,0.05)',
-                borderRadius: '0 0 0 0', // No radius since it's connected to the curved top
+                borderRadius: '0 0 0 0',
+                background: '#F0F0F0',
+                overflow: 'hidden',
               }}
-            />
+            >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: `${zoneFills.top}%`,
+                  background: siloColors.top,
+                  transition: 'height 0.6s ease',
+                }}
+              />
+            </Box>
             
             {/* Third zone (50-75%) - Leaf Green */}
             <Box
               sx={{
                 height: '25%',
-                background: visibleZones.third ? siloColors.third : 'transparent',
-                opacity: visibleZones.third ? 1 : 0.1,
-                transition: 'opacity 0.6s ease',
+                position: 'relative',
                 border: '1px solid rgba(0,0,0,0.05)',
+                background: '#F0F0F0',
+                overflow: 'hidden',
               }}
-            />
+            >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: `${zoneFills.third}%`,
+                  background: siloColors.third,
+                  transition: 'height 0.6s ease',
+                }}
+              />
+            </Box>
             
             {/* Second zone (25-50%) - Forest Green */}
             <Box
               sx={{
                 height: '25%',
-                background: visibleZones.second ? siloColors.second : 'transparent',
-                opacity: visibleZones.second ? 1 : 0.1,
-                transition: 'opacity 0.6s ease',
+                position: 'relative',
                 border: '1px solid rgba(0,0,0,0.05)',
+                background: '#F0F0F0',
+                overflow: 'hidden',
               }}
-            />
+            >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: `${zoneFills.second}%`,
+                  background: siloColors.second,
+                  transition: 'height 0.6s ease',
+                }}
+              />
+            </Box>
             
             {/* Bottom zone (0-25%) - Dark Green */}
             <Box
               sx={{
                 height: '25%',
-                background: visibleZones.bottom ? siloColors.bottom : 'transparent',
+                position: 'relative',
                 borderRadius: '0 0 6px 6px',
-                opacity: visibleZones.bottom ? 1 : 0.1,
-                transition: 'opacity 0.6s ease',
                 border: '1px solid rgba(0,0,0,0.05)',
+                background: '#F0F0F0',
+                overflow: 'hidden',
               }}
-            />
+            >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: `${zoneFills.bottom}%`,
+                  background: siloColors.bottom,
+                  transition: 'height 0.6s ease',
+                }}
+              />
+            </Box>
           </Box>
         </Box>
         
@@ -258,47 +368,95 @@ const SiloIndicator: React.FC<SiloIndicatorProps> = ({
         <Box
           sx={{
             height: '25%',
-            background: visibleZones.top ? siloColors.top : 'transparent',
+            position: 'relative',
             borderRadius: '8px 8px 0 0',
-            opacity: visibleZones.top ? 1 : 0.1,
-            transition: 'opacity 0.5s ease',
             border: '1px solid rgba(0,0,0,0.05)',
+            background: '#F0F0F0',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: `${zoneFills.top}%`,
+              background: siloColors.top,
+              transition: 'height 0.5s ease',
+            }}
+          />
+        </Box>
         
         {/* Third zone (50-75%) - Leaf Green */}
         <Box
           sx={{
             height: '25%',
-            background: visibleZones.third ? siloColors.third : 'transparent',
-            opacity: visibleZones.third ? 1 : 0.1,
-            transition: 'opacity 0.5s ease',
+            position: 'relative',
             border: '1px solid rgba(0,0,0,0.05)',
+            background: '#F0F0F0',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: `${zoneFills.third}%`,
+              background: siloColors.third,
+              transition: 'height 0.5s ease',
+            }}
+          />
+        </Box>
         
         {/* Second zone (25-50%) - Forest Green */}
         <Box
           sx={{
             height: '25%',
-            background: visibleZones.second ? siloColors.second : 'transparent',
-            opacity: visibleZones.second ? 1 : 0.1,
-            transition: 'opacity 0.5s ease',
+            position: 'relative',
             border: '1px solid rgba(0,0,0,0.05)',
+            background: '#F0F0F0',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: `${zoneFills.second}%`,
+              background: siloColors.second,
+              transition: 'height 0.5s ease',
+            }}
+          />
+        </Box>
         
         {/* Bottom zone (0-25%) - Dark Green */}
         <Box
           sx={{
             height: '25%',
-            background: visibleZones.bottom ? siloColors.bottom : 'transparent',
+            position: 'relative',
             borderRadius: '0 0 4px 4px',
-            opacity: visibleZones.bottom ? 1 : 0.1,
-            transition: 'opacity 0.5s ease',
             border: '1px solid rgba(0,0,0,0.05)',
+            background: '#F0F0F0',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: `${zoneFills.bottom}%`,
+              background: siloColors.bottom,
+              transition: 'height 0.5s ease',
+            }}
+          />
+        </Box>
       </Box>
       
       {showPercentage && (

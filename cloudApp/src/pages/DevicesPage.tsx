@@ -40,7 +40,7 @@ import {
   List as ListIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/FirebaseAuthContext';
 import DeviceCard from '../components/cards/DeviceCard';
 import DeviceSettingsModal from '../components/modals/DeviceSettingsModal';
 import DeviceDeleteModal from '../components/modals/DeviceDeleteModal';

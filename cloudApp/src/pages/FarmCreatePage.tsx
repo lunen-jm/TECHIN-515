@@ -10,7 +10,7 @@ import {
 import FarmCreateForm from '../components/forms/FarmCreateForm';
 import { createFarmWithMembership } from '../firebase/services/farmService';
 import { FarmFormData } from '../utils/validation/farmValidation';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/FirebaseAuthContext';
 
 const FarmCreatePage: React.FC = () => {
   const navigate = useNavigate();

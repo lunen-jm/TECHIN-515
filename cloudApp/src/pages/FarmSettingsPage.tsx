@@ -26,7 +26,7 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/FirebaseAuthContext';
 import { getFarm, updateFarm, deleteFarm, getUserFarmRole } from '../firebase/services/farmService';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';

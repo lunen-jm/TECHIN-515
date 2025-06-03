@@ -14,7 +14,7 @@ import {
   Sync as SyncIcon,
   Group as GroupIcon 
 } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/FirebaseAuthContext';
 import { createTestFarmForUser } from '../../utils/createTestFarm';
 import { 
   migrateFarmsToMultiUser, 

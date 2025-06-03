@@ -38,13 +38,19 @@ let appCheck: AppCheck | undefined;
 // Function to initialize App Check
 const initializeAppCheckSafely = () => {
   try {
-    // Skip App Check entirely in development to prevent 400 errors
-    if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
-      console.log('🔧 App Check skipped in development mode');
+    // STRICT CHECK: Absolutely no App Check in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚫 App Check BLOCKED in development mode');
       return;
     }
     
-    // Only initialize in production or when explicitly required
+    // STRICT CHECK: No App Check on localhost
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.log('🚫 App Check BLOCKED on localhost');
+      return;
+    }
+    
+    // Only initialize in production with real domain
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider('6LdWfFMrAAAAACoFAe5VudMsTLi8zV0zuQqJS6XC'),
       isTokenAutoRefreshEnabled: true
@@ -57,21 +63,32 @@ const initializeAppCheckSafely = () => {
   }
 };
 
-// Initialize App Check with delay to ensure ReCAPTCHA script is loaded
+// COMPLETELY DISABLE App Check initialization in development
 if (typeof window !== 'undefined') {
-  // Only initialize in production or specific environments
-  if (process.env.NODE_ENV === 'production' && window.location.hostname !== 'localhost') {
-    // Give some time for ReCAPTCHA script to load
+  console.log('🔍 Environment check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    hostname: window.location.hostname,
+    href: window.location.href
+  });
+  
+  // ONLY initialize in production AND not localhost
+  if (process.env.NODE_ENV === 'production' && 
+      window.location.hostname !== 'localhost' && 
+      window.location.hostname !== '127.0.0.1') {
+    console.log('🚀 Production environment detected - initializing App Check');
     setTimeout(() => {
       initializeAppCheckSafely();
     }, 1000);
   } else {
-    console.log('🔧 App Check initialization skipped for development');
+    console.log('🔧 Development/localhost detected - App Check DISABLED');
   }
 } else {
-  // For SSR environments - also skip in development
+  // SSR environment - only in production
   if (process.env.NODE_ENV === 'production') {
+    console.log('🖥️ SSR Production environment - initializing App Check');
     initializeAppCheckSafely();
+  } else {
+    console.log('🖥️ SSR Development environment - App Check DISABLED');
   }
 }
 
