@@ -17,6 +17,8 @@ import {
 import { Google as GoogleIcon } from '@mui/icons-material';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth } from '../../firebase/config';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -27,7 +29,17 @@ const Login: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const { loginWithRedirect, isAuthenticated, isLoading, error: auth0Error } = useAuth0();
+  // Check if Auth0 is configured
+  const isAuth0Configured = process.env.REACT_APP_AUTH0_DOMAIN && 
+    process.env.REACT_APP_AUTH0_CLIENT_ID;
+  
+  // Always call useAuth0 (required by React Hooks rules)
+  const { 
+    loginWithRedirect, 
+    isAuthenticated, 
+    isLoading, 
+    error: auth0Error 
+  } = useAuth0();
   
   const isDevMode = process.env.NODE_ENV === 'development';
 
@@ -44,19 +56,25 @@ const Login: React.FC = () => {
       setError(auth0Error.message || 'Authentication failed');
     }
   }, [auth0Error]);
-
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
     try {
-      await loginWithRedirect({
-        authorizationParams: {
-          connection: 'Username-Password-Authentication',
-          login_hint: email
-        }
-      });
+      if (isAuth0Configured && loginWithRedirect) {
+        // Use Auth0 authentication
+        await loginWithRedirect({
+          authorizationParams: {
+            connection: 'Username-Password-Authentication',
+            login_hint: email
+          }
+        });
+      } else {
+        // Use Firebase authentication
+        await signInWithEmailAndPassword(auth, email, password);
+        navigate('/');
+      }
     } catch (error: any) {
       setError(error.message || 'Failed to sign in');
       setLoading(false);
@@ -68,11 +86,19 @@ const Login: React.FC = () => {
     setLoading(true);
     
     try {
-      await loginWithRedirect({
-        authorizationParams: {
-          connection: 'google-oauth2'
-        }
-      });
+      if (isAuth0Configured && loginWithRedirect) {
+        // Use Auth0 Google connection
+        await loginWithRedirect({
+          authorizationParams: {
+            connection: 'google-oauth2'
+          }
+        });
+      } else {
+        // Use Firebase Google authentication
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        navigate('/');
+      }
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Google');
       setLoading(false);
@@ -110,12 +136,20 @@ const Login: React.FC = () => {
           <Typography component="h1" variant="h4" gutterBottom fontWeight="700">
             Welcome Back
           </Typography>
-          
-          <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-            Sign in to continue to your dashboard
+            <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
+            {isAuth0Configured 
+              ? 'Sign in with your Auth0 account' 
+              : 'Sign in to continue to your dashboard'
+            }
           </Typography>
           
           {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+          
+          {!isAuth0Configured && (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              Using Firebase authentication (Auth0 not configured)
+            </Alert>
+          )}
           
           <Box component="form" onSubmit={handleEmailSignIn} sx={{ mt: 1 }}>
             <TextField
@@ -129,10 +163,9 @@ const Login: React.FC = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
+            />            <TextField
               margin="normal"
-              required
+              required={!isAuth0Configured}
               fullWidth
               name="password"
               label="Password"
@@ -141,6 +174,8 @@ const Login: React.FC = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={!!isAuth0Configured}
+              helperText={isAuth0Configured ? 'Password not required for Auth0' : ''}
             />
               <Button
               type="submit"
