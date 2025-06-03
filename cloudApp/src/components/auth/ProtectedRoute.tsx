@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/FirebaseAuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { CircularProgress, Box, Alert } from '@mui/material';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';

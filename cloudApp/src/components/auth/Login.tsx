@@ -25,6 +25,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [useFirebase, setUseFirebase] = useState(false); // Toggle for Firebase auth
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -55,14 +56,13 @@ const Login: React.FC = () => {
     if (auth0Error) {
       setError(auth0Error.message || 'Authentication failed');
     }
-  }, [auth0Error]);
-  const handleEmailSignIn = async (e: React.FormEvent) => {
+  }, [auth0Error]);  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
     try {
-      if (isAuth0Configured && loginWithRedirect) {
+      if (isAuth0Configured && !useFirebase && loginWithRedirect) {
         // Use Auth0 authentication
         await loginWithRedirect({
           authorizationParams: {
@@ -80,13 +80,12 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
-
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
     
     try {
-      if (isAuth0Configured && loginWithRedirect) {
+      if (isAuth0Configured && !useFirebase && loginWithRedirect) {
         // Use Auth0 Google connection
         await loginWithRedirect({
           authorizationParams: {
@@ -104,10 +103,10 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
-
   const useTestAccount = () => {
     setEmail('test@example.com');
     setPassword('Test123!');
+    setUseFirebase(true); // Enable Firebase mode for test account
   };
   return (
     <Grid container sx={{ minHeight: '100vh' }}>      {/* Left side - Login Form */}      <Grid        item 
@@ -135,15 +134,35 @@ const Login: React.FC = () => {
         <Box sx={{ maxWidth: 480, width: '100%', mx: 'auto' }}>
           <Typography component="h1" variant="h4" gutterBottom fontWeight="700">
             Welcome Back
-          </Typography>
-            <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
+          </Typography>          <Typography component="h2" variant="body1" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
             {isAuth0Configured 
-              ? 'Sign in with your Auth0 account' 
+              ? (useFirebase ? 'Sign in with Firebase (Test Mode)' : 'Sign in with your Auth0 account')
               : 'Sign in to continue to your dashboard'
             }
           </Typography>
           
           {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+          
+          {isAuth0Configured && isDevMode && (
+            <Alert 
+              severity={useFirebase ? "warning" : "info"} 
+              sx={{ mb: 3 }}
+              action={
+                <Button 
+                  color="inherit" 
+                  size="small" 
+                  onClick={() => setUseFirebase(!useFirebase)}
+                >
+                  Switch to {useFirebase ? 'Auth0' : 'Firebase'}
+                </Button>
+              }
+            >
+              {useFirebase 
+                ? 'Using Firebase authentication (Test Mode)' 
+                : 'Using Auth0 authentication'
+              }
+            </Alert>
+          )}
           
           {!isAuth0Configured && (
             <Alert severity="info" sx={{ mb: 3 }}>
@@ -165,7 +184,7 @@ const Login: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
             />            <TextField
               margin="normal"
-              required={!isAuth0Configured}
+              required={!isAuth0Configured || useFirebase}
               fullWidth
               name="password"
               label="Password"
@@ -174,8 +193,8 @@ const Login: React.FC = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={!!isAuth0Configured}
-              helperText={isAuth0Configured ? 'Password not required for Auth0' : ''}
+              disabled={Boolean(isAuth0Configured && !useFirebase)}
+              helperText={isAuth0Configured && !useFirebase ? 'Password not required for Auth0' : ''}
             />
               <Button
               type="submit"
