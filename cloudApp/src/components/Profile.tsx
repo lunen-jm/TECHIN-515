@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const Profile: React.FC = () => {
-  const { auth0User, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { user, logout } = useAuth0();
   const [message, setMessage] = useState('');
 
