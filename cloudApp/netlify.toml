@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "build"
 
+# Disable secrets scanning for AUTH0_AUDIENCE since it's safe to be public (like API key)
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "AUTH0_AUDIENCE"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
